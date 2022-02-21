@@ -1,0 +1,29 @@
+<html>
+<style>
+  #buttoncontainer {
+    position: absolute;
+    right:20px;
+    bottom:60px;
+    color: #CCC;
+    display: none;
+  }
+  button {
+    padding:20;
+    font-size: 32px;
+  }
+</style>
+<body>
+<script src="../../dist/ihop.js"></script>
+<div id="buttoncontainer">
+  <h1>Button Iframe (B) in (A)</h1>
+  <button id="buynow">BUY DVD NOW!</button>
+</div>
+<script>
+  const ihop = new IHOP('B');
+  const buyNow = document.querySelector('#buynow');
+  const buttonContainer = document.querySelector('#buttoncontainer');
+
+  // export elements!
+  ihop.export('buyNow', buyNow, ['click']);
+  ihop.export('buyNowContainer', buttonContainer);
+</script>

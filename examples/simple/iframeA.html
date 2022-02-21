@@ -1,0 +1,19 @@
+<html>
+<body>
+<script src="../../dist/ihop.js"></script>
+<iframe id="iframeB" src="iframeB.html"></iframe>
+<script>
+  const ihop = new IHOP('A');
+
+  const complex = {
+    foo: {
+      bar: 123,
+      baz: {
+        quux: '123'
+      }
+    }
+  };
+
+  ihop.export('complex', complex);
+</script>
+<iframe id="iframeC" src="iframeC.html"></iframe>

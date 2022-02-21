@@ -1,0 +1,11 @@
+<html>
+<body>
+<script src="../../dist/ihop.js"></script>
+<iframe id="iframe" src="iframeA.html"></iframe>
+<script>
+  let ihop;
+  // We need to wait a while to add the parent element
+  setTimeout(()=>{
+    ihop = new IHOPBase('root');
+  }, 5000);
+</script>

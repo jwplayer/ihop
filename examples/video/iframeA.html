@@ -1,0 +1,45 @@
+<html>
+<style>
+  body {
+    overflow: hidden;
+    padding:0;
+    border:0;
+    margin:0;
+  }
+  iframe {
+    position:absolute;
+    width:480px;
+    height:400px;
+    left: 0px;
+    top: 0px;
+    padding:0;
+    border:0;
+    margin:0;
+    pointer-events: visible;
+  }
+  #iframeB {
+    left: 480px;
+    top: 0px;
+  }
+  video {
+    width:960px;
+    height:400px;
+    padding:0;
+    border:0;
+    margin:0;
+  }
+</style>
+<body>
+<script src="../../dist/ihop.js"></script>
+<video>
+  <source src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
+  <track default id="english" label="English" kind="captions" srclang="en" src="example-captions.vtt" />
+</video>
+<iframe id="iframeB" src="iframeB.html"></iframe>
+<script>
+  const ihop = new IHOP('A');
+  const videoEl = document.querySelector('video');
+
+  ihop.export('video', videoEl, ['play', 'playing', 'timeupdate', 'pause', 'volumechange']);
+</script>
+<iframe id="iframeC" src="iframeC.html"></iframe>

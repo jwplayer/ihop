@@ -1,0 +1,87 @@
+<html>
+<style>
+  iframe {
+    width: 960px;
+    height: 400px;
+    padding:0;
+    border:0;
+    margin:0;
+    overflow: hidden;
+  }
+  progress {
+    height:30px;
+    width:960px;
+  }
+</style>
+<body>
+<script src="../../dist/ihop.js"></script>
+<h1>Video Element is in Iframe (A)</h1>
+<iframe id="iframe" src="iframeA.html"></iframe>
+<script>
+  const ihop = new IHOP('main');
+  let setup = false;
+
+  ihop.addEventListener('changed', () => {
+    // Wait for the objects we need.to be available..
+    if (setup || !ihop.tree.A?.video || !ihop.tree.A?.B?.buyNow || !ihop.tree.A?.B?.buyNowContainer) {
+      return;
+    }
+    setup = true;
+    // This video element is in iframe "A"
+    const videoEl = ihop.tree.A.video;
+    const currTimeProg = document.querySelector('#progress')
+
+    // !! Modify properties on the video element just like it was local to the page !!
+    videoEl.volume = 0;
+
+    // !! Call methods on video element just like it was local to the page !!
+    document.querySelector('#play').addEventListener('click', () => {
+      videoEl.play();
+    });
+    document.querySelector('#pause').addEventListener('click', () => videoEl.pause());
+
+    // !! Add event listeners to the video element just like it was local to the page !!
+    videoEl.addEventListener('timeupdate', async () => {
+      const currentTime = await videoEl.currentTime;
+      const duration = await videoEl.duration;
+
+      currTimeProg.value = currentTime/duration;
+
+      // Unhide the "Buy Now" button for 10 seconds
+      if (currentTime > 5 && currentTime < 15) {
+        buyNowContEl.style = 'display:block;';
+      } else {
+        buyNowContEl.style = '';
+      }
+    });
+
+    currTimeProg.addEventListener('click', async (e)=> {
+      const ratio = e.offsetX / currTimeProg.offsetWidth;
+      const duration = await videoEl.duration;
+      const seekToTime = duration * ratio;
+      videoEl.currentTime = seekToTime;
+    });
+
+    // SHOPPING CART EXAMPLE
+    // These elements are in iframe "B" which is a child of "A"
+    // Any event from them is traveling across 2 boundaries to get here
+    const buyNowContEl = ihop.tree.A.B.buyNowContainer;
+    const buyNowEl = ihop.tree.A.B.buyNow;
+
+    buyNowEl.addEventListener('click', () => {
+      document.querySelector('#shoppingcart').innerHTML += "Dolphins DVD - $29.99<br>";
+    });
+  });
+</script>
+<div>
+  <h1>Parent Page Controls</h1>
+  <progress id="progress" value="0"></progress>
+  <div>
+    <button id="play">Play</button>
+    <button id="pause">Pause</button>
+  </div>
+</div>
+<div>
+  <h1>Shopping Cart</h1>
+  <div id="shoppingcart"></div>
+</div>
