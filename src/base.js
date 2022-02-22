@@ -19,7 +19,7 @@ export default class IHOPBase extends EventTarget {
     this.name = name;
     this.path = '';
     this.children = new Map();
-    this.options_ = Object.assign({}, options, defaultOptions);
+    this.options_ = Object.assign({}, defaultOptions, options);
 
     this.localTreeVersion_ = 1;
     this.globalTreeVersion_ = 0;
@@ -69,12 +69,12 @@ export default class IHOPBase extends EventTarget {
   // addChild registers a routable child with the current IHOP instance the
   // current instance then communicates the availablity of the new child to
   // the other existing children and the parent IHOP.
-  addChild(name, iframe) {
+  addChild(name, iframe, origin) {
     if (this.children.has(name)) {
       throw new Error('Existing child has the same name!')
     }
 
-    this.children.set(name, new IHOPChild(name, iframe, iframe.origin));
+    this.children.set(name, new IHOPChild(name, iframe, origin));
 
     // TODO: Get the current state of the child nodes
     // TODO: Do communication!
@@ -152,7 +152,7 @@ export default class IHOPBase extends EventTarget {
     console.debug('what>>', type, 'at>>', this.path || '<root>', 'from>>', IHOP_ORG,'data>>', data);
 
     if (fnName in this) {
-      this[fnName](data, source);
+      this[fnName](data, source, origin);
     }
   }
 
@@ -161,12 +161,12 @@ export default class IHOPBase extends EventTarget {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onPeek(data, eventSource) {
+  onPeek(data, eventSource, eventOrigin) {
     const {from, state, version} = data;
 
     // If we didn't know this child exists...
     if (!this.children.has(from)) {
-      this.addChild(from, eventSource);
+      this.addChild(from, eventSource, eventOrigin);
     }
 
     const child = this.children.get(from);
@@ -193,7 +193,7 @@ export default class IHOPBase extends EventTarget {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onPoke(data, eventSource) {
+  onPoke(data, eventSource, eventOrigin) {
     const {state, version, path} = data;
 
     // If we get a poke from our parent, we know we are no longer a root node

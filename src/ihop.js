@@ -147,7 +147,7 @@ export default class IHOP extends IHOPBase {
     return destination.split('.')[0];
   }
 
-  doReturn(eventSource, destination, promiseId, value, error) {
+  doReturn(eventSource, eventOrigin, destination, promiseId, value, error) {
     let needsProxy = false;
 
     if (!isStructuredCloneable(value)) {
@@ -170,7 +170,7 @@ export default class IHOP extends IHOPBase {
       value,
       error,
       needsProxy
-    }), '*');
+    }), eventOrigin);
   }
 
   doGet(target, property, destination, source, promiseId) {
@@ -290,7 +290,7 @@ export default class IHOP extends IHOPBase {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onCast (data, eventSource) {
+  onCast (data, eventSource, eventOrigin) {
     if (data.source !== this.path) {
       this.emitEvent(data);
     }
@@ -302,7 +302,7 @@ export default class IHOP extends IHOPBase {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onBubble(data, eventSource) {
+  onBubble(data, eventSource, eventOrigin) {
     if (this.isRoot) {
       // change to a `cast`` event and send it to all my children
       return this.castEvent(data);
@@ -315,7 +315,7 @@ export default class IHOP extends IHOPBase {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  async onGet(data, eventSource) {
+  async onGet(data, eventSource, eventOrigin) {
     const {target, property, destination, source, promiseId} = data;
 
     if (this.isDestinationSelf(destination)) {
@@ -328,9 +328,9 @@ export default class IHOP extends IHOPBase {
           value = await Reflect.get(value, prop);
         }
 
-        this.doReturn(eventSource, source, promiseId, value);
+        this.doReturn(eventSource, eventOrigin, source, promiseId, value);
       } catch (error) {
-        this.doReturn(eventSource, source, promiseId, undefined, error);
+        this.doReturn(eventSource, eventOrigin, source, promiseId, undefined, error);
       }
     } else  {
       this.continueRouting_(data);
@@ -342,7 +342,7 @@ export default class IHOP extends IHOPBase {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onSet(data, eventSource) {
+  onSet(data, eventSource, eventOrigin) {
     const {target, property, destination, source, promiseId, value} = data;
 
     if (this.isDestinationSelf(destination)) {
@@ -359,9 +359,9 @@ export default class IHOP extends IHOPBase {
         Reflect.set(targetObj, lastProp, value);
 
 
-        this.doReturn(eventSource, source, promiseId, true);
+        this.doReturn(eventSource, eventOrigin, source, promiseId, true);
       } catch (error) {
-        this.doReturn(eventSource, source, promiseId, undefined, error);
+        this.doReturn(eventSource, eventOrigin, source, promiseId, undefined, error);
       }
     } else  {
       this.continueRouting_(data);
@@ -373,7 +373,7 @@ export default class IHOP extends IHOPBase {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onReturn(data, eventSource) {
+  onReturn(data, eventSource, eventOrigin) {
     const {destination, promiseId, value, error, needsProxy} = data;
 
     if (this.isDestinationSelf(destination)) {
@@ -411,7 +411,7 @@ export default class IHOP extends IHOPBase {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  async onCall(data, eventSource) {
+  async onCall(data, eventSource, eventOrigin) {
     const {target, property, destination, source, promiseId, args} = data;
 
     if (this.isDestinationSelf(destination)) {
@@ -427,9 +427,9 @@ export default class IHOP extends IHOPBase {
 
         const value = await Reflect.apply(targetObj[lastProp], targetObj, args);
 
-        this.doReturn(eventSource, source, promiseId, value);
+        this.doReturn(eventSource, eventOrigin, source, promiseId, value);
       } catch (error) {
-        this.doReturn(eventSource, source, promiseId, undefined, error);
+        this.doReturn(eventSource, eventOrigin, source, promiseId, undefined, error);
       }
     } else  {
       this.continueRouting_(data);
