@@ -4,18 +4,56 @@ iframe {
   border-color: #00f;
 }
 </style>
-<h1>Player in iframe</h1>
-<div>
-  <iframe src="jwplayer.html" width="960" height="540" allowfullscreen></iframe>
-</div>
-<h1>Controls in iframe</h1>
-<iframe src="controls.html" width="970" height="70"></iframe>
 
-
-<script src="../../dist/ihop.js"></script>
+<body>
+<script type="text/javascript" src="../../dist/ihop.js"></script>
 <script type="text/javascript">
-  const ihop = new IHOP('main', {
-    parentOrigin: 'http://127.0.0.1:8080',
-    allowedOrigins: ['http://127.0.0.1:8080']
-  });
+  const options = {};
+
+  if (location.href.indexOf('transmuxer-output') !== -1) {
+    options.parentOrigin = 'https://jrivera-projects.s3.amazonaws.com/';
+    options.allowedOrigins = [ 'https://jrivera-projects.s3.amazonaws.com/' ];
+  } else if (location.href.indexOf('jrivera-projects') !== -1) {
+    options.parentOrigin = 'https://transmuxer-output.s3.amazonaws.com/';
+    options.allowedOrigins = [ 'https://transmuxer-output.s3.amazonaws.com/' ];
+  } else {
+    options.parentOrigin = 'http://127.0.0.1:8080/';
+    options.allowedOrigins = [ 'http://127.0.0.1:8080/' ];
+  }
+  const ihop = new IHOP('main', options);
+</script>
+
+
+<script type="text/javascript">
+  let iframeUrlA = 'jwplayer.html';
+  let iframeUrlB = 'controls.html';
+
+  if (location.href.indexOf('transmuxer-output') !== -1) {
+    iframeUrlA = 'https://jrivera-projects.s3.amazonaws.com/IHOP/examples/jwplayer/jwplayer.html';
+    iframeUrlB = 'https://jrivera-projects.s3.amazonaws.com/IHOP/examples/jwplayer/controls.html';
+  } else if (location.href.indexOf('jrivera-projects') !== -1) {
+    iframeUrlA = 'https://transmuxer-output.s3.amazonaws.com/IHOP/examples/jwplayer/jwplayer.html';
+    iframeUrlB = 'https://transmuxer-output.s3.amazonaws.com/IHOP/examples/jwplayer/controls.html';
+  }
+
+  const jwH1 = document.createElement('h1');
+  jwH1.innerHTML = 'Player in iframe';
+  document.body.appendChild(jwH1);
+
+  const jwIframe = document.createElement('iframe');
+  jwIframe.src = iframeUrlA;
+  jwIframe.width = '960';
+  jwIframe.height = '540';
+  jwIframe.setAttribute('allowfullscreen', 'allowfullscreen');
+  document.body.appendChild(jwIframe);
+
+  const ctrlH1 = document.createElement('h1');
+  ctrlH1.innerHTML = 'Controls in iframe';
+  document.body.appendChild(ctrlH1);
+
+  const ctrlIframe = document.createElement('iframe');
+  ctrlIframe.src = iframeUrlB;
+  ctrlIframe.width = '970';
+  ctrlIframe.height = '70';
+  document.body.appendChild(ctrlIframe);
 </script>
