@@ -1,4 +1,4 @@
-import uglify from 'rollup-plugin-uglify';
+import { uglify } from 'rollup-plugin-uglify';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfill from 'rollup-plugin-polyfill-node';
@@ -14,7 +14,7 @@ export default {
       file: 'dist/ihop.min.js',
       format: 'iife',
       name: 'IHOP',
-      plugins: [uglify],
+      plugins: [uglify()],
     }
   ],
   plugins: [
