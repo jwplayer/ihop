@@ -1,16 +1,25 @@
+import sameOrigin from 'same-origin';
+
 import IHOPChild from './child';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants';
+
+const defaultOptions = {
+  forceRoot: false,
+  parentOrigin: '*',
+  allowedOrigins: [],
+};
 
 /**
  * Iframe Hopper Base - contains the functionality related to maintaining a
  * globally consistent state between iframes.
  */
 export default class IHOPBase extends EventTarget {
-  constructor(name, forceRoot = false) {
+  constructor(name, options = {}) {
     super();
     this.name = name;
     this.path = '';
     this.children = new Map();
+    this.options_ = Object.assign({}, options, defaultOptions);
 
     this.localTreeVersion_ = 1;
     this.globalTreeVersion_ = 0;
@@ -26,7 +35,7 @@ export default class IHOPBase extends EventTarget {
     // Setup message pump
     window.addEventListener('message', (...args) => this.onMessage(...args));
 
-    if (window.parent !== window && !forceRoot) {
+    if (window.parent !== window && this.options_.forceRoot === false) {
       this.registerWithParent_();
     } else {
       this.toParent = () => {};
@@ -35,8 +44,9 @@ export default class IHOPBase extends EventTarget {
 
   registerWithParent_() {
     const {parent} = window;
+    const parentOrigin = this.options_.parentOrigin;
 
-    this.toParent = (event) => parent.postMessage(event, '*');
+    this.toParent = (event) => parent.postMessage(event, parentOrigin);
 
     // Periodically, peek parent until we get a poke back then stop
     this.parentPing_ = setInterval(()=> this.peekState_(), 1000);
@@ -64,7 +74,7 @@ export default class IHOPBase extends EventTarget {
       throw new Error('Existing child has the same name!')
     }
 
-    this.children.set(name, new IHOPChild(name, iframe));
+    this.children.set(name, new IHOPChild(name, iframe, iframe.origin));
 
     // TODO: Get the current state of the child nodes
     // TODO: Do communication!
@@ -74,7 +84,7 @@ export default class IHOPBase extends EventTarget {
 
   toChildren(message) {
     for (let child of this.children.values()) {
-      child.window.postMessage(message, '*');
+      child.window.postMessage(message, child.origin);
     }
   }
 
@@ -112,8 +122,16 @@ export default class IHOPBase extends EventTarget {
    * @param  {window} eventSource - The source window the event originated from
    */
   onMessage(message) {
-    const { source, data } = message;
+    const { origin, source, data } = message;
+    const { allowedOrigins } = this.options_;
     if (!data) {
+      return;
+    }
+
+    // If the message is not from an allowed origin throw it out before any
+    // further processing.
+    if (allowedOrigins.length &&
+       allowedOrigins.some((allowedOrigin) => sameOrigin(allowedOrigin, origin)) === false) {
       return;
     }
 

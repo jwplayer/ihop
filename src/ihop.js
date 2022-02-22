@@ -14,8 +14,8 @@ export default class IHOP extends IHOPBase {
    * @param  {string} name - A locally unique name for the iframe in the global state.
    * @param  {boolean} forceRoot - Ensure this node remains a root node even if a parent becomes available. Do not attempt to contact a parent window from this iframe.
    */
-  constructor(name, forceRoot) {
-    super(name, forceRoot);
+  constructor(name, options) {
+    super(name, options);
 
     this.promises_ = new Map();
     this.tree = {};
