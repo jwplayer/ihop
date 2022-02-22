@@ -1,0 +1,21 @@
+<style type="text/css">
+iframe {
+  border-style: solid;
+  border-color: #00f;
+}
+</style>
+<h1>Player in iframe</h1>
+<div>
+  <iframe src="jwplayer.html" width="960" height="540" allowfullscreen></iframe>
+</div>
+<h1>Controls in iframe</h1>
+<iframe src="controls.html" width="970" height="70"></iframe>
+
+
+<script src="../../dist/ihop.js"></script>
+<script type="text/javascript">
+  const ihop = new IHOP('main', {
+    parentOrigin: 'http://127.0.0.1:8080',
+    allowedOrigins: ['http://127.0.0.1:8080']
+  });
+</script>

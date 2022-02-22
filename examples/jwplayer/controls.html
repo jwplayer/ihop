@@ -1,0 +1,53 @@
+<style type="text/css">
+  progress {
+    height:30px;
+    width:960px;
+  }
+</style>
+<div>
+  <progress id="progress" value="0"></progress>
+  <div>
+    <button id="play">Play</button>
+    <button id="pause">Pause</button>
+  </div>
+</div>
+
+
+<script src="../../dist/ihop.js"></script>
+<script type="text/javascript">
+  const ihop = new IHOP('controls');
+
+  let setup = false;
+
+  ihop.addEventListener('changed', () => {
+    // Wait for the objects we need.to be available..
+    if (setup || !ihop.tree.jwplayer?.player) {
+      return;
+    }
+    setup = true;
+    console.debug('Found jwplayer...');
+
+    // This jwplayer is in iframe "jwplayer"
+    const JWPLAYER = ihop.tree.jwplayer.player;
+    const currTimeProg = document.querySelector('#progress');
+
+    JWPLAYER.setMute(true);
+
+    document.querySelector('#play').addEventListener('click', () => JWPLAYER.play());
+    document.querySelector('#pause').addEventListener('click', () => JWPLAYER.pause());
+
+    JWPLAYER.addEventListener('time', async ({origMessage}) => {
+      const currentTime = origMessage.position;
+      const duration = origMessage.duration;
+
+      currTimeProg.value = currentTime / duration;
+    });
+
+    currTimeProg.addEventListener('click', async (e) => {
+      const ratio = e.offsetX / currTimeProg.offsetWidth;
+      const duration = await JWPLAYER.getDuration();
+      const seekToTime = duration * ratio;
+      JWPLAYER.seek(seekToTime);
+    });
+  });
+</script>
