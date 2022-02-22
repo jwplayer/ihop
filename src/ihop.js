@@ -66,15 +66,19 @@ export default class IHOP extends IHOPBase {
    * @param  {object} object - The object we are exporting
    * @param  {array<strings>} eventList - An optional array of event names to listen for on `object` and propagate to other contexts.
    */
-  export(name, object, eventList = []) {
+  export(name, object, eventList = [], attachName = 'addEventListener') {
     // TODO: Make sure `name`` is  unique
     this.localTargets_[name] = object;
     this.localTree_[name] = `@export[${eventList.join(',')}]`;
 
     // Listen for all events...
     eventList.forEach((event) => {
-      object.addEventListener(event, (payload) => {
-        const newPayload = Object.assign({}, payload);
+      object[attachName](event, (payload) => {
+        let newPayload = payload;
+        if (payload instanceof Event) {
+          // DOM Event objects are not structured cloneable so copy their properties
+          newPayload = Object.assign({}, payload);
+        }
         this.doEvent(event, this.path, name, newPayload);
       });
     });
@@ -244,7 +248,7 @@ export default class IHOP extends IHOPBase {
 
     if (node) {
       const event = new Event(message.name);
-
+      event.origMessage = message.payload;
       // TODO: Need to figure out how to send a payload...
       node.dispatchEvent(event);
     }
