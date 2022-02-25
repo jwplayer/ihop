@@ -1,8 +1,7 @@
 export default class IHOPChild {
-  constructor(name, window, origin) {
-    this.name = name;
+  constructor(id, window, origin) {
+    this.id = id;
     this.origin = origin;
     this.window = window;
-    this.stateVersion = 0;
   }
 }

@@ -6,6 +6,6 @@
   let ihop;
   // We need to wait a while to add the parent element
   setTimeout(()=>{
-    ihop = new IHOPBase('root');
+    ihop = new (Object.getPrototypeOf(IHOP))('root');
   }, 5000);
 </script>

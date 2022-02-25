@@ -4,7 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfill from 'rollup-plugin-polyfill-node';
 
 export default {
-  input: 'src/ihop.js',
+  input: 'src/index.js',
   output: [
     {
       file: 'dist/ihop.js',
@@ -19,7 +19,9 @@ export default {
   ],
   plugins: [
     nodePolyfill(),
-    nodeResolve(),
+    nodeResolve({
+      browser: true
+    }),
     commonjs({
       exclude: ["src/**"],
       include: ["node_modules/**"],

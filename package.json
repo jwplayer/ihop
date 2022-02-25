@@ -15,6 +15,8 @@
   "author": "Jon-Carlos Rivera",
   "license": "ISC",
   "dependencies": {
+    "eventemitter3": "^4.0.7",
+    "nanoid": "^3.3.1",
     "same-origin": "^0.1.1"
   },
   "devDependencies": {

@@ -1,23 +1,13 @@
-import sameOrigin from 'same-origin';
-
-import NetworkController from './network';
-import IHOPChild from './child';
-import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants';
-
-const defaultOptions = {
-  forceRoot: false
-};
+import EventEmitter from 'eventemitter3';
 
 /**
  * Iframe Hopper Base - contains the functionality related to maintaining a
  * globally consistent state between iframes.
  */
-export default class IHOPBase extends EventTarget {
-  constructor(name, options = {}) {
+export default class StateModel extends EventEmitter {
+  constructor(router) {
     super();
-    this.name = name;
-    this.path = '';
-    this.options_ = Object.assign({}, defaultOptions, options);
+    //this.options_ = Object.assign({}, defaultOptions, options);
 
     this.childTreeVersions_ = new Map();
     this.localTreeVersion_ = 1;
@@ -31,17 +21,14 @@ export default class IHOPBase extends EventTarget {
     // from our parent)
     this.isRoot = true;
 
-    this.network = new NetworkController(this.options_);
+    this.router = router;
 
-    if (window.parent !== window && this.options_.forceRoot === false) {
+    if (window.parent !== window) {
       this.registerWithParent_();
-    } else {
-      // TODO: Hmmm
-      this.network.parent_ = null;
     }
 
-    this.network.on('peek', this.onPeek.bind(this));
-    this.network.on('poke', this.onPoke.bind(this));
+    this.router.on('peek', this.onPeek.bind(this));
+    this.router.on('poke', this.onPoke.bind(this));
   }
 
   registerWithParent_() {
@@ -56,25 +43,22 @@ export default class IHOPBase extends EventTarget {
     clearInterval(this.parentPing_);
   }
 
-  generatePath(base, part) {
-    return base.length ? `${base}.${part}` : part;
-  }
-
-  generateProxies() {}
-
   peekState_() {
-    this.network.toParent({
+    this.router.network.toParent({
       type: 'peek',
       version: this.localTreeVersion_,
-      from: this.name,
+      from: this.router.name,
       state: this.localTree_
     });
   }
 
   pokeState_() {
-    this.network.toAllChildren({
+    this.emit('modelchanged', this.globalTree_);
+
+    this.router.network.toAllChildren({
       type: 'poke',
-      path: this.path,
+      path: this.router.path,
+      from: this.router.name,
       version: this.globalTreeVersion_,
       state: this.globalTree_
     });
@@ -85,8 +69,8 @@ export default class IHOPBase extends EventTarget {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onPeek(data, eventSource, eventOrigin) {
-    const {from, state, version} = data;
+  onPeek(data) {
+    const {port, from, state, version} = data;
 
     // If we didn't know this child exists...
     if (!this.childTreeVersions_.has(from)) {
@@ -104,13 +88,13 @@ export default class IHOPBase extends EventTarget {
         // Start poking to send global state down the tree
         this.globalTree_ = this.localTree_;
         this.globalTreeVersion_ = this.localTreeVersion_;
-        this.generateProxies();
+        // Start propagating downwards
         this.pokeState_();
       }
 
       // Continue propagating upwards
       // We do this even if we are root because we can't be sure if our
-      // parent node just hasn't responded yet
+      // parent node exists but just hasn't responded yet
       this.peekState_();
     }
   }
@@ -130,9 +114,7 @@ export default class IHOPBase extends EventTarget {
 
     if (version > this.globalTreeVersion_) {
       this.globalTree_ = state;
-      this.path = this.generatePath(path, this.name);
       this.globalTreeVersion_ = version;
-      this.generateProxies();
 
       // Continue propagating downwards
       this.pokeState_();
