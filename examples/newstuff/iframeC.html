@@ -2,5 +2,12 @@
 <body>
 <script src="../../dist/ihop.js"></script>
 <script>
-  IHOP('C');
+  const ihop = IHOP('C');
+
+  const exp = {
+    foo: 'Live from C!'
+  };
+
+  ihop.export('obj', exp);
+  ihop.export('fun', () => 'Fun from C!');
 </script>

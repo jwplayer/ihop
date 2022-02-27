@@ -1,4 +1,5 @@
 import EventEmitter from 'eventemitter3';
+import generatePath from './generate-path';
 
 export default class Router extends EventEmitter {
   constructor(name, network) {
@@ -34,7 +35,9 @@ export default class Router extends EventEmitter {
   route(message) {
     const { destination } = message;
 
-    if (!destination || this.isDestinationSelf_(destination)) {
+    console.debug('what>>', message.type, 'at>>', this.path || this.name, 'from>>', message.from,'destination>>', message.destination, 'data>>', message);
+
+    if (typeof destination === 'undefined' || this.isDestinationSelf_(destination)) {
       this.emit(message.type, message);
     } else if (this.isDestinationChildOrSelf_(destination)) {
       // Forward message to child
@@ -42,25 +45,23 @@ export default class Router extends EventEmitter {
       const nodeId = this.nodeMap_.get(childName);
 
       if (nodeId) {
+        message.from = this.name;
         this.network.toNode(nodeId, message);
       }
     } else {
+      message.from = this.name;
       // Forward message to parent
       this.network.toParent(message);
     }
   }
 
-  generatePath_(base, part) {
-    return base.length ? `${base}.${part}` : part;
-  }
-
   onMessage_(message) {
     // Listen for events that let us know topography
-    // chiefly peel and poke
+    // chiefly peek and poke
     const { type, from, path, nodeId } = message;
 
     if (typeof path === 'string') {
-      const newPath = this.generatePath_(path, this.name);
+      const newPath = generatePath(path, this.name);
 
       if (newPath !== this.path) {
         this.path = newPath;

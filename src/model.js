@@ -4,8 +4,8 @@ import EventEmitter from 'eventemitter3';
  * Iframe Hopper Base - contains the functionality related to maintaining a
  * globally consistent state between iframes.
  */
-export default class StateModel extends EventEmitter {
-  constructor(router) {
+export default class Model extends EventEmitter {
+  constructor(router, exportStore) {
     super();
     //this.options_ = Object.assign({}, defaultOptions, options);
 
@@ -22,6 +22,7 @@ export default class StateModel extends EventEmitter {
     this.isRoot = true;
 
     this.router = router;
+    this.exportStore = exportStore;
 
     if (window.parent !== window) {
       this.registerWithParent_();
@@ -29,6 +30,19 @@ export default class StateModel extends EventEmitter {
 
     this.router.on('peek', this.onPeek.bind(this));
     this.router.on('poke', this.onPoke.bind(this));
+  }
+
+  export(name, value) {
+    if (typeof value === 'object') {
+      this.localTree_[name] = '@object';
+    } else if (typeof value === 'function') {
+      this.localTree_[name] = '@function';
+    } else {
+      this.localTree_[name] = value;
+    }
+    this.exportStore.set(name, value);
+    this.localTreeVersion_ += 1;
+    this.peekState_();
   }
 
   registerWithParent_() {

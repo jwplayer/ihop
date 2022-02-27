@@ -1,4 +1,4 @@
-import sameOrigin from 'same-origin';
+import sameOrigin from './same';
 import EventEmitter from 'eventemitter3';
 import { nanoid } from 'nanoid';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants';
@@ -26,7 +26,7 @@ class Node {
  * Iframe Hopper Base - contains the functionality related to maintaining a
  * globally consistent state between iframes.
  */
-export default class NetworkAdapter extends EventEmitter {
+export default class Network extends EventEmitter {
   constructor(options = {}) {
     super();
     const finalOptions = Object.assign({}, defaultOptions, options);
@@ -128,7 +128,7 @@ export default class NetworkAdapter extends EventEmitter {
       const node = new Node(sourceId, source, origin);
 
       this.nodes_.set(sourceId, node);
-      this.sourceToId_.set(source, node);
+      this.sourceToId_.set(source, sourceId);
     } else {
       sourceId = this.sourceToId_.get(source);
     }
@@ -137,7 +137,7 @@ export default class NetworkAdapter extends EventEmitter {
       nodeId: sourceId,
     });
 
-    console.debug('what>>', newMessage.type, 'from>>', newMessage.from,'data>>', newMessage);
+    //console.debug('what>>', newMessage.type, 'from>>', newMessage.from,'data>>', newMessage);
 
     this.emit('message', newMessage);
   }

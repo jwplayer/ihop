@@ -10,6 +10,7 @@ export default {
       file: 'dist/ihop.js',
       format: 'iife',
       name: 'IHOP',
+      sourcemap: true
     }, {
       file: 'dist/ihop.min.js',
       format: 'iife',
@@ -26,6 +27,5 @@ export default {
       exclude: ["src/**"],
       include: ["node_modules/**"],
     }),
-  ],
-  //external: ['same-origin']
+  ]
 };
