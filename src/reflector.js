@@ -1,24 +1,30 @@
+import ProxyHandler from './proxy-handler';
+import isStructuredCloneable from './is-structured-cloneable';
+
+const noop = () => {};
+
 export default class Reflector {
-  constructor(router, exportStore) {
+  constructor(router, promiseStore, retainedStore) {
     this.router = router;
-    this.exportStore = exportStore;
+    this.promiseStore = promiseStore;
+    this.retainedStore = retainedStore;
 
     this.router.on('get', (message) => this.onGet(message));
     this.router.on('set', (message) => this.onSet(message));
     this.router.on('call', (message) => this.onCall(message));
-  }
-
-  findExport() {
-
+    this.finalizationRegistry = new FinalizationRegistry((heldValue) => this.onFinalization(heldValue));
   }
 
   doReturn (message, value, error) {
     const { source, promiseId} = message;
 
+    if (!isStructuredCloneable(value)) {
+      value = 'todo';
+    }
+
     this.router.route({
       type: 'return',
       destination: source,
-      promiseId,
       value,
       error,
       from: this.router.name,
@@ -27,20 +33,30 @@ export default class Reflector {
     });
   }
 
+  onFinalization(heldValue) {
+    const { destination, functionId } = heldValue;
+
+    this.router.route({
+      type: 'final',
+      destination,
+      functionId,
+      from: this.router.name,
+      source: this.router.path
+    });
+  }
+
   async onGet(message) {
     const {targetName, property } = message;
 
     try {
-      const propertyPath = property.split('.');
-      let value = this.exportStore.get(targetName);
+      //const propertyPath = property.split('.');
+      const target = this.retainedStore.get(targetName);
 
-      if (!value) {
+      if (!target) {
         return this.doReturn(message, undefined);
       }
 
-      for (let prop of propertyPath) {
-        value = await Reflect.get(value, prop);
-      }
+      const value = await Reflect.get(target, property);
 
       this.doReturn(message, value);
     } catch (error) {
@@ -49,16 +65,34 @@ export default class Reflector {
   }
 
   async onCall(message) {
-    const {targetName, args } = message;
+    const {targetName, args, source } = message;
+    // if any arguments are functions - ie. callbacks:
+    // 1) get the remote function id
+    // 2) generate proxy function that calls to that id
+    // 3) replace parameter with proxy
 
     try {
-      const target = this.exportStore.get(targetName);
+      const newArgs = args.map((arg) => {
+        if (typeof arg !== 'string' || arg.indexOf('@function.') === -1) {
+          return arg;
+        }
+        const functionId = arg.slice(10);
+        const proxy = new Proxy(noop, ProxyHandler(this.router, this.promiseStore, this.retainedStore, source, functionId));
 
+        this.finalizationRegistry.register(proxy, {
+          destination: source,
+          functionId
+        });
+
+        return proxy;
+      });
+
+      const target = this.retainedStore.get(targetName);
       if (!target) {
         return this.doReturn(message, undefined);
       }
 
-      const value = await Reflect.apply(target, undefined, args);
+      const value = await Reflect.apply(target, undefined, newArgs);
 
       this.doReturn(message, value);
     } catch (error) {
@@ -70,18 +104,13 @@ export default class Reflector {
     const {targetName, property, value } = message;
 
     try {
-      const propertyPath = property.split('.');
-      const lastProp = propertyPath.pop();
-      let target = this.exportStore.get(targetName);
+      const target = this.retainedStore.get(targetName);
 
       if (!target) {
         return this.doReturn(message, undefined);
       }
 
-      for (let prop of propertyPath) {
-        target = await Reflect.get(target, prop);
-      }
-      await Reflect.set(target, lastProp, value);
+      Reflect.set(target, property, value);
       this.doReturn(message, value);
     } catch (error) {
       this.doReturn(message, undefined, error);

@@ -1,3 +1,5 @@
+import isStructuredCloneable from './is-structured-cloneable';
+import { nanoid } from 'nanoid';
 import EventEmitter from 'eventemitter3';
 
 /**
@@ -5,7 +7,7 @@ import EventEmitter from 'eventemitter3';
  * globally consistent state between iframes.
  */
 export default class Model extends EventEmitter {
-  constructor(router, exportStore) {
+  constructor(router, retainedStore) {
     super();
     //this.options_ = Object.assign({}, defaultOptions, options);
 
@@ -22,7 +24,7 @@ export default class Model extends EventEmitter {
     this.isRoot = true;
 
     this.router = router;
-    this.exportStore = exportStore;
+    this.retainedStore = retainedStore;
 
     if (window.parent !== window) {
       this.registerWithParent_();
@@ -40,9 +42,76 @@ export default class Model extends EventEmitter {
     } else {
       this.localTree_[name] = value;
     }
-    this.exportStore.set(name, value);
+
+    if (typeof value === 'object') {
+      const retainedId = this.retain_(value);
+
+      this.localTree_[name] = {
+        '@type': '@object',
+        '@id': retainedId
+      };
+
+      if (!isStructuredCloneable(value)) {
+        this.localTree_[name]['@children'] = {};
+        this.deepExport_(value, this.localTree_[name]['@children']);
+      }
+    } else if (typeof value === 'function') {
+      const retainedId = this.retain_(value);
+
+      this.localTree_[name] = {
+        '@type': '@function',
+        '@id': retainedId
+      };
+    } else {
+      this.localTree_[name] = value;
+    }
+
+    console.log(this.localTree_[name])
+
     this.localTreeVersion_ += 1;
     this.peekState_();
+  }
+
+  retain_(value) {
+    let retainedId = this.retainedStore.find(value);
+
+    if (!retainedId) {
+      retainedId = nanoid();
+      this.retainedStore.set(retainedId, value);
+    }
+
+    return retainedId;
+  }
+
+  deepExport_(srcNode, dstNode) {
+    const srcKeys = Object.keys(srcNode);
+
+    srcKeys.forEach((key) => {
+      const src = srcNode[key];
+      if (typeof src === 'object') {
+        const retainedId = this.retain_(src);
+
+        dstNode[key] = {
+          '@type': '@object',
+          '@id': retainedId
+        };
+
+        if (!isStructuredCloneable(src)) {
+          dstNode[key]['@children'] = {};
+          this.deepExport_(srcNode[key], dstNode[key]['@children']);
+        }
+      } else if (typeof src === 'function') {
+        const retainedId = this.retain_(src);
+
+        dstNode[key] = {
+          '@type': '@function',
+          '@id': retainedId
+        };
+      } else {
+        dstNode[key] = src;
+      }
+    });
+
   }
 
   registerWithParent_() {
@@ -67,7 +136,7 @@ export default class Model extends EventEmitter {
   }
 
   pokeState_() {
-    this.emit('modelchanged', this.globalTree_);
+    this.emit('changed', this.globalTree_);
 
     this.router.network.toAllChildren({
       type: 'poke',

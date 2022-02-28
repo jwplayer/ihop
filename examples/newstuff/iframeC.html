@@ -2,12 +2,13 @@
 <body>
 <script src="../../dist/ihop.js"></script>
 <script>
-  const ihop = IHOP('C');
+  const ihop = new IHOP('C');
 
-  const exp = {
-    foo: 'Live from C!'
+  const obj = {
+    foo: 'Live from C!',
+    bar: (callback) => setTimeout(() => callback('Fun from C!'), 2000),
+    baz: (wrapper) => wrapper((str)=>'Woah '+str)
   };
 
-  ihop.export('obj', exp);
-  ihop.export('fun', () => 'Fun from C!');
+  ihop.export('obj', obj);
 </script>

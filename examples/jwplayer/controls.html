@@ -31,7 +31,8 @@
 
   let setup = false;
 
-  ihop.addEventListener('changed', () => {
+  ihop.on('changed', () => {
+    console.log(ihop.tree);
     // Wait for the objects we need.to be available..
     if (setup || !ihop.tree.jwplayer?.player) {
       return;
@@ -48,9 +49,9 @@
     document.querySelector('#play').addEventListener('click', () => JWPLAYER.play());
     document.querySelector('#pause').addEventListener('click', () => JWPLAYER.pause());
 
-    JWPLAYER.addEventListener('time', async ({origMessage}) => {
-      const currentTime = origMessage.position;
-      const duration = origMessage.duration;
+    JWPLAYER.on('time', (message) => {
+      const currentTime = message.position;
+      const duration = message.duration;
 
       currTimeProg.value = currentTime / duration;
     });

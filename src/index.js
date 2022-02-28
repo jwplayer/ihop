@@ -2,23 +2,30 @@ import Model from './model';
 import Router from './router';
 import Network from './network';
 import View from './view';
-import PromiseStore from './promise';
+import PromiseStore from './promise-store';
 import Completer from './completer';
 import Reflector from './reflector';
+import RetainedStore from './retained-store';
+
+import EventEmitter from 'eventemitter3';
 // export { StateModel, Router, NetworkAdapter, TreeView};
 
-export default function (name) {
-  const network = new Network();
-  const promiseStore = new PromiseStore();
-  const exportStore = new Map(/* <name, export obj> */);
-  const router = new Router(name, network);
-  const model = new Model(router, exportStore);
-  const view = new View(model, router, promiseStore);
-  const completer = new Completer(router, promiseStore);
-  const reflector = new Reflector(router, exportStore);
+export default class extends EventEmitter {
+  constructor(name, options) {
+    super();
+    this.name = name;
+    this.network = new Network();
+    this.promiseStore = new PromiseStore();
+    this.functionStore = new Map(/* <uuid, function> */);
+    this.retainedStore = new RetainedStore();
+    this.router = new Router(this.name, this.network);
+    this.model = new Model(this.router, this.retainedStore);
+    this.view = new View(this.model, this.router, this.promiseStore, this.retainedStore);
+    this.completer = new Completer(this.router, this.promiseStore, this.retainedStore);
+    this.reflector = new Reflector(this.router, this.promiseStore, this.retainedStore);
 
-  return {
-   tree:  view.tree,
-   export: (...args) => model.export(...args)
-  };
-};
+    this.tree = this.view.tree;
+    this.export = (...args) => this.model.export(...args);
+    this.view.on('changed', () => this.emit('changed'));
+  }
+}
