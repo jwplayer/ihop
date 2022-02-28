@@ -1,26 +1,29 @@
 export default class Completer {
-  constructor(router, promiseStore, retainedStore) {
+  constructor(router, promiseStore, proxySchema) {
     this.router = router;
     this.promiseStore = promiseStore;
-    this.retainedStore = retainedStore;
+    this.proxySchema = proxySchema;
 
     this.router.on('return', (...args) => this.completeReturn(...args));
-    this.router.on('final', (...args) => this.finalization(...args));
   }
 
   completeReturn(message) {
-    const { promiseId, value, error } = message;
+    const { source, promiseId, error } = message;
+    let { value } = message;
+
+    // if value is a complex retained obj proxy schema:
+    // reconstruct the proxy
+    // start a finalization listener on any proxies created
+    if (this.proxySchema.isSchema(value)) {
+      // Finalization needs to be tracked so the references can be
+      // deleted at the "source" node
+      value = this.proxySchema.fromSchema(value, source, true);
+    }
 
     if (typeof error === 'undefined') {
       this.promiseStore.acceptPromise(promiseId, value);
     } else {
       this.promiseStore.rejectPromise(promiseId, error);
     }
-  }
-
-  finalization(message) {
-    const { functionId } = message;
-
-    this.retainedStore.delete(functionId);
   }
 }

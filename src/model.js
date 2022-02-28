@@ -7,7 +7,7 @@ import EventEmitter from 'eventemitter3';
  * globally consistent state between iframes.
  */
 export default class Model extends EventEmitter {
-  constructor(router, retainedStore) {
+  constructor(router, proxySchema) {
     super();
     //this.options_ = Object.assign({}, defaultOptions, options);
 
@@ -24,7 +24,7 @@ export default class Model extends EventEmitter {
     this.isRoot = true;
 
     this.router = router;
-    this.retainedStore = retainedStore;
+    this.proxySchema = proxySchema;
 
     if (window.parent !== window) {
       this.registerWithParent_();
@@ -35,33 +35,8 @@ export default class Model extends EventEmitter {
   }
 
   export(name, value) {
-    if (typeof value === 'object') {
-      this.localTree_[name] = '@object';
-    } else if (typeof value === 'function') {
-      this.localTree_[name] = '@function';
-    } else {
-      this.localTree_[name] = value;
-    }
-
-    if (typeof value === 'object') {
-      const retainedId = this.retain_(value);
-
-      this.localTree_[name] = {
-        '@type': '@object',
-        '@id': retainedId
-      };
-
-      if (!isStructuredCloneable(value)) {
-        this.localTree_[name]['@children'] = {};
-        this.deepExport_(value, this.localTree_[name]['@children']);
-      }
-    } else if (typeof value === 'function') {
-      const retainedId = this.retain_(value);
-
-      this.localTree_[name] = {
-        '@type': '@function',
-        '@id': retainedId
-      };
+    if (typeof value === 'object' || typeof value === 'function') {
+      this.localTree_[name] = this.proxySchema.toSchema(value);
     } else {
       this.localTree_[name] = value;
     }
@@ -70,48 +45,6 @@ export default class Model extends EventEmitter {
 
     this.localTreeVersion_ += 1;
     this.peekState_();
-  }
-
-  retain_(value) {
-    let retainedId = this.retainedStore.find(value);
-
-    if (!retainedId) {
-      retainedId = nanoid();
-      this.retainedStore.set(retainedId, value);
-    }
-
-    return retainedId;
-  }
-
-  deepExport_(srcNode, dstNode) {
-    const srcKeys = Object.keys(srcNode);
-
-    srcKeys.forEach((key) => {
-      const src = srcNode[key];
-      if (typeof src === 'object') {
-        const retainedId = this.retain_(src);
-
-        dstNode[key] = {
-          '@type': '@object',
-          '@id': retainedId
-        };
-
-        if (!isStructuredCloneable(src)) {
-          dstNode[key]['@children'] = {};
-          this.deepExport_(srcNode[key], dstNode[key]['@children']);
-        }
-      } else if (typeof src === 'function') {
-        const retainedId = this.retain_(src);
-
-        dstNode[key] = {
-          '@type': '@function',
-          '@id': retainedId
-        };
-      } else {
-        dstNode[key] = src;
-      }
-    });
-
   }
 
   registerWithParent_() {

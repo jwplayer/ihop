@@ -3,16 +3,11 @@ import generatePath from './generate-path';
 
 import EventEmitter from 'eventemitter3';
 
-const noop = () => {};
-const noobj = {};
-
 export default class View extends EventEmitter {
-  constructor(model, router, promiseStore, retainedStore) {
+  constructor(model, proxySchema) {
     super();
     this.model = model;
-    this.router = router;
-    this.promiseStore = promiseStore;
-    this.retainedStore = retainedStore;
+    this.proxySchema = proxySchema;
     this.tree = {};
 
     this.model.on('changed', (model) => this.reifyModel_(model));
@@ -30,17 +25,9 @@ export default class View extends EventEmitter {
     srcKeys.forEach((key) => {
       const src = srcNode[key];
 
-      if(typeof src === 'object') {
-        if ('@id' in src && '@type' in src){
-          if (src['@type'] === '@function') {
-            dstNode[key] = noop;
-          } else {
-            dstNode[key] = {};
-          }
-          if ('@children' in src) {
-            this.levelToView_(src['@children'], dstNode[key], path);
-          }
-          dstNode[key] = new Proxy(dstNode[key], ProxyHandler(this.router, this.promiseStore, this.retainedStore, path, src['@id']));
+      if (typeof src === 'object') {
+        if (this.proxySchema.isSchema(src)) {
+          dstNode[key] = this.proxySchema.fromSchema(src, path);
         } else {
           dstNode[key] = {};
           this.levelToView_(src, dstNode[key], generatePath(path, key));

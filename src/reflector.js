@@ -4,22 +4,21 @@ import isStructuredCloneable from './is-structured-cloneable';
 const noop = () => {};
 
 export default class Reflector {
-  constructor(router, promiseStore, retainedStore) {
+  constructor(router, proxySchema, retainedStore) {
     this.router = router;
-    this.promiseStore = promiseStore;
+    this.proxySchema = proxySchema;
     this.retainedStore = retainedStore;
 
     this.router.on('get', (message) => this.onGet(message));
     this.router.on('set', (message) => this.onSet(message));
     this.router.on('call', (message) => this.onCall(message));
-    this.finalizationRegistry = new FinalizationRegistry((heldValue) => this.onFinalization(heldValue));
   }
 
   doReturn (message, value, error) {
     const { source, promiseId} = message;
 
     if (!isStructuredCloneable(value)) {
-      value = 'todo';
+      value = this.proxySchema.toSchema(value);
     }
 
     this.router.route({
@@ -30,18 +29,6 @@ export default class Reflector {
       from: this.router.name,
       source: this.router.path,
       promiseId
-    });
-  }
-
-  onFinalization(heldValue) {
-    const { destination, functionId } = heldValue;
-
-    this.router.route({
-      type: 'final',
-      destination,
-      functionId,
-      from: this.router.name,
-      source: this.router.path
     });
   }
 
@@ -73,16 +60,18 @@ export default class Reflector {
 
     try {
       const newArgs = args.map((arg) => {
-        if (typeof arg !== 'string' || arg.indexOf('@function.') === -1) {
+        if (!this.proxySchema.isSchema(arg)){
           return arg;
         }
-        const functionId = arg.slice(10);
-        const proxy = new Proxy(noop, ProxyHandler(this.router, this.promiseStore, this.retainedStore, source, functionId));
 
-        this.finalizationRegistry.register(proxy, {
-          destination: source,
-          functionId
-        });
+        // Finalization needs to be tracked so the references can be
+        // deleted at the "source" node
+        const proxy = this.proxySchema.fromSchema(arg, source, true);
+
+        // this.finalizationRegistry.register(proxy, {
+        //   destination: source,
+        //   retainedId
+        // });
 
         return proxy;
       });
@@ -93,6 +82,10 @@ export default class Reflector {
       }
 
       const value = await Reflect.apply(target, undefined, newArgs);
+
+      // if value is complex (not cloneable):
+      // retain it and generate a proxy schema for it
+      // send schema as value
 
       this.doReturn(message, value);
     } catch (error) {

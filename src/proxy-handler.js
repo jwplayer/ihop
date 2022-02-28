@@ -1,6 +1,4 @@
-import { nanoid } from 'nanoid';
-
-const ProxyHandler = (router, promiseStore, retainedStore, destination, targetName) => {
+const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName) => {
   return {
     apply(targetFn, thisArgs, args, receiver) {
       // A trap for a function call
@@ -14,12 +12,7 @@ const ProxyHandler = (router, promiseStore, retainedStore, destination, targetNa
         if (typeof arg !== 'function') {
           return arg;
         }
-        let functionId =retainedStore.find(arg);
-        if (!functionId) {
-          functionId = nanoid();
-          retainedStore.set(functionId, arg);
-        }
-        return `@function.${functionId}`;
+        return proxySchema.toSchema(arg);
       });
 
       router.route({
