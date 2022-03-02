@@ -35,7 +35,7 @@ export default class Router extends EventEmitter {
   route(message) {
     const { destination } = message;
 
-    console.debug('what>>', message.type, 'at>>', this.path || this.name, 'from>>', message.from,'destination>>', message.destination, 'data>>', message);
+    // console.debug('what>>', message.type, 'at>>', this.path || this.name, 'from>>', message.from,'destination>>', message.destination, 'data>>', message);
 
     if (typeof destination === 'undefined' || this.isDestinationSelf_(destination)) {
       this.emit(message.type, message);

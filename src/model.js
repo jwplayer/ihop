@@ -41,8 +41,6 @@ export default class Model extends EventEmitter {
       this.localTree_[name] = value;
     }
 
-    console.log(this.localTree_[name])
-
     this.localTreeVersion_ += 1;
     this.peekState_();
   }

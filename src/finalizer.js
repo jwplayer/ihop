@@ -9,7 +9,6 @@ export default class Finalizer {
   finalization(message) {
     const { retainedId } = message;
 
-    console.log('freeing reference!', retainedId);
     this.retainedStore.delete(retainedId);
   }
 }
