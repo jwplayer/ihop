@@ -95,7 +95,7 @@ export default class Network extends EventEmitter {
     const { origin, source, data } = message;
     const { allowedOrigins } = this.options_;
 
-    if (!data || !data.data) {
+    if (!data || !data.data || !source) {
       return;
     }
 
