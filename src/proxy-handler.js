@@ -46,9 +46,18 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
 
     get(targetObj, property, receiver) {
       const propType = typeof targetObj[property];
+
       if (propType === 'object' || propType === 'function') {
         return targetObj[property];
       }
+      // The engine checks if the proxy is thenable and this results in
+      // spurious messages being sent if we don't "blackhole" then.
+      // Because of the above check, we WILL still respond to then if it is
+      // on the proxy
+      if (property === 'then') {
+        return;
+      }
+
       const [promiseId, promise] = promiseStore.makePromise();
 
       router.route({
