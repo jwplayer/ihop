@@ -1,7 +1,7 @@
-import { uglify } from 'rollup-plugin-uglify';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfill from 'rollup-plugin-polyfill-node';
+import injectProcessEnv from 'rollup-plugin-inject-process-env';
 
 export default {
   input: 'src/index.js',
@@ -11,11 +11,6 @@ export default {
       format: 'iife',
       name: 'IHOP',
       sourcemap: true
-    }, {
-      file: 'dist/ihop.min.js',
-      format: 'iife',
-      name: 'IHOP',
-      plugins: [uglify()],
     }
   ],
   plugins: [
@@ -27,5 +22,8 @@ export default {
       exclude: ["src/**"],
       include: ["node_modules/**"],
     }),
+    injectProcessEnv({
+      NODE_ENV: 'dev'
+    })
   ]
 };
