@@ -1,3 +1,5 @@
+import isStructuredCloneable from './is-structured-cloneable';
+
 const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName) => {
   return {
     apply(targetFn, thisArgs, args, receiver) {
@@ -8,17 +10,19 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
       // if one of the arguments is a function - ie. a callback:
       // 1) store function locally in a store and get a uuid
       // 2) replace argument with uuid
-      const sansFunctions = args.map((arg) => {
-        if (typeof arg !== 'function') {
+      const safeArgs = args.map((arg) => {
+        if (isStructuredCloneable(arg)) {
           return arg;
         }
-        return proxySchema.toSchema(arg);
+        if (!(arg instanceof Event)) {
+          return proxySchema.toSchema(arg);
+        }
       });
 
       router.route({
         type: 'call',
         targetName,
-        args: sansFunctions,
+        args: safeArgs,
         destination,
         from: router.name,
         source: router.path,
