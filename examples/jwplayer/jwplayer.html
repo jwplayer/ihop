@@ -10,17 +10,17 @@
 
 <script type="text/javascript" src="../../dist/ihop.js"></script>
 <script type="text/javascript">
-  const options = {};
+  const options = {network: {}};
 
   if (location.href.indexOf('transmuxer-output') !== -1) {
-    options.parentOrigin = 'https://jrivera-projects.s3.amazonaws.com/';
-    options.allowedOrigins = [ 'https://jrivera-projects.s3.amazonaws.com/' ];
+    options.network.parentOrigin = 'https://jrivera-projects.s3.amazonaws.com/';
+    options.network.allowedOrigins = [ 'https://jrivera-projects.s3.amazonaws.com/' ];
   } else if (location.href.indexOf('jrivera-projects') !== -1) {
-    options.parentOrigin = 'https://transmuxer-output.s3.amazonaws.com/';
-    options.allowedOrigins = [ 'https://transmuxer-output.s3.amazonaws.com/' ];
+    options.network.parentOrigin = 'https://transmuxer-output.s3.amazonaws.com/';
+    options.network.allowedOrigins = [ 'https://transmuxer-output.s3.amazonaws.com/' ];
   } else {
-    options.parentOrigin = 'http://127.0.0.1:8080/';
-    options.allowedOrigins = [ 'http://127.0.0.1:8080/' ];
+    options.network.parentOrigin = 'http://127.0.0.1:8080/';
+    options.network.allowedOrigins = [ 'http://127.0.0.1:8080/' ];
   }
   const ihop = new IHOP('jwplayer', options);
 

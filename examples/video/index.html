@@ -21,15 +21,11 @@
   const ihop = new IHOP('main');
 
   // Wait for the objects we need.to be available..
-  (async () => {
-    await Promise.all([
-      ihop.waitFor('A.video'),
-      ihop.waitFor('A.B.buyNow'),
-      ihop.waitFor('A.B.buyNowContainer')
-    ]);
-
-    // This video element is in iframe "A"
-    const videoEl = ihop.tree.A.video;
+  Promise.all([
+    ihop.waitFor('A.video'),
+    ihop.waitFor('A.B.buyNow'),
+    ihop.waitFor('A.B.buyNowContainer')
+  ]).then(([videoEl, buyNowEl, buyNowContEl])=> {;
     const currTimeProg = document.querySelector('#progress')
 
     // !! Modify properties on the video element just like it was local to the page !!
@@ -64,15 +60,10 @@
     });
 
     // SHOPPING CART EXAMPLE
-    // These elements are in iframe "B" which is a child of "A"
-    // Any event from them is traveling across 2 boundaries to get here
-    const buyNowContEl = ihop.tree.A.B.buyNowContainer;
-    const buyNowEl = ihop.tree.A.B.buyNow;
-
     buyNowEl.addEventListener('click', () => {
       document.querySelector('#shoppingcart').innerHTML += "Dolphins DVD - $29.99<br>";
     });
-  })();
+  });
 </script>
 <div>
   <h1>Parent Page Controls</h1>

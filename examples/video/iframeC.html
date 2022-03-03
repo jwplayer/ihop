@@ -13,9 +13,7 @@
   let setup = false;
 
   // Wait for the object we need.to be available..
-  (async () => {
-    await ihop.waitFor('A.video');
-    const videoEl = ihop.tree.A.video;
+  ihop.waitFor('A.video').then(videoEl => {
     const currTimeEl = document.querySelector('#currenttime');
 
     document.querySelector('#play').addEventListener('click', () => videoEl.play());
@@ -23,7 +21,7 @@
     videoEl.addEventListener('timeupdate', async ()=> {
       currTimeEl.innerHTML = (await videoEl.currentTime).toFixed(1);
     });
-  })();
+  });
 </script>
 
 <div>

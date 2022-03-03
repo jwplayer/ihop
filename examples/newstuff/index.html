@@ -6,10 +6,12 @@
 <script>
   const ihop = new IHOP('root');
 
-  (async () => {
-    await Promise.all([ihop.waitFor('B.C.obj'), ihop.waitFor('B.C.async')]);
+  ihop.waitFor('B.C.compose').then(async (compose) => {
+    const add = (a, b) => a + b;
+    const double = (n) => n * 2;
 
-    const fn = await ihop.tree.B.C.obj.baz((a, b) => a + b, 3);
-    console.log(await fn(3, 5));
-  })();
+    const sumAndDouble = await compose(double, add);
+
+    console.log(await sumAndDouble(3, 4));
+  });
 </script>
