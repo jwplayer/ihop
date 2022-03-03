@@ -26,6 +26,9 @@
 
 
   jwplayer('botr_z9bBGuwi_YBfiyx4u_div').on('ready', function(){
-      ihop.export('player', jwplayer('botr_z9bBGuwi_YBfiyx4u_div'));
+    jwplayer('botr_z9bBGuwi_YBfiyx4u_div').setConfig({
+      "repeat": true
+    });
+    ihop.export('player', jwplayer('botr_z9bBGuwi_YBfiyx4u_div'));
   });
 </script>

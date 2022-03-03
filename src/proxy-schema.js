@@ -4,7 +4,6 @@ import ProxyHandler from './proxy-handler';
 import generatePath from './generate-path';
 
 const noop = () => {};
-const noobj = {};
 
 export default class ProxySchema {
   constructor(router, promiseStore, retainedStore) {
@@ -43,7 +42,6 @@ export default class ProxySchema {
 
     if (typeof obj === 'object') {
       const retainedId = this.retain_(obj);
-
       schema = {
         '@type': '@object',
         '@id': retainedId
@@ -51,7 +49,7 @@ export default class ProxySchema {
 
       if (!isStructuredCloneable(obj)) {
         schema['@children'] = {};
-        this.deepToSchema_(obj, schema['@children']);
+        this.deepToSchema_(obj, schema['@children'], obj);
       }
     } else if (typeof obj === 'function') {
       const retainedId = this.retain_(obj);
@@ -67,34 +65,50 @@ export default class ProxySchema {
     return schema;
   }
 
-  deepToSchema_(srcNode, dstNode) {
+  deepToSchema_(srcNode, dstNode, parent = null, cycleTracker = []) {
     const srcKeys = Object.keys(srcNode);
 
-    srcKeys.forEach((key) => {
+    for (const key in srcNode) {
       const src = srcNode[key];
-      if (typeof src === 'object') {
-        const retainedId = this.retain_(src);
 
+      if (cycleTracker.indexOf(src) > -1) {
+        continue;
+      }
+
+      if (typeof src === 'object' && src !== null) {
+        const retainedId = this.retain_(src);
         dstNode[key] = {
           '@type': '@object',
           '@id': retainedId
         };
 
+        cycleTracker.push(src);
+
         if (!isStructuredCloneable(src)) {
           dstNode[key]['@children'] = {};
-          this.deepToSchema_(srcNode[key], dstNode[key]['@children']);
+          this.deepToSchema_(srcNode[key], dstNode[key]['@children'], src, cycleTracker);
         }
       } else if (typeof src === 'function') {
-        const retainedId = this.retain_(src);
+        let fn = src;
+        if (parent) {
+          try {
+            // `bind`` can fail if the src is already a proxy
+            // if it is, then it is probably already bound
+            fn = src.bind(parent);
+          } catch {
+            fn = src;
+          }
+        }
+        const retainedId = this.retain_(fn);
 
         dstNode[key] = {
           '@type': '@function',
           '@id': retainedId
         };
       } else {
-        dstNode[key] = src;
+        // dstNode[key] = src;
       }
-    });
+    }
   }
 
   fromSchema(schema, path, needsFinalization = false) {
@@ -102,11 +116,14 @@ export default class ProxySchema {
 
     if(typeof schema === 'object') {
       if (this.isSchema(schema)) {
-        if (schema['@type'] === '@function') {
+        const type = schema['@type'];
+
+        if (type === '@function') {
           obj = noop;
-        } else {
-          obj = noobj;
+        } else if (type === '@object') {
+          obj = {};
         }
+
         if ('@children' in schema) {
           this.deepFromSchema_(schema['@children'], obj, path, needsFinalization);
         }
@@ -138,16 +155,20 @@ export default class ProxySchema {
     srcKeys.forEach((key) => {
       const src = srcNode[key];
 
-      if(typeof src === 'object') {
-        if ('@id' in src && '@type' in src){
-          if (src['@type'] === '@function') {
+      if (typeof src === 'object') {
+        if ('@id' in src && '@type' in src) {
+          const type = src['@type'];
+
+          if (type === '@function') {
             dstNode[key] = noop;
-          } else {
+          } else if (type === '@object') {
             dstNode[key] = {};
           }
+
           if ('@children' in src) {
             this.deepFromSchema_(src['@children'], dstNode[key], path, needsFinalization);
           }
+
           // it is import to descend into children first to buid the proxy-tree
           // from the bottom up
           dstNode[key] = new Proxy(dstNode[key], ProxyHandler(this.router, this.promiseStore, this, path, src['@id']));
@@ -155,7 +176,7 @@ export default class ProxySchema {
           if (needsFinalization) {
             this.finalizationRegistry.register(dstNode[key], {
               destination: path,
-              retainedId: schema['@id']
+              retainedId: src['@id']
             });
           }
         } else {
@@ -169,6 +190,6 @@ export default class ProxySchema {
   }
 
   isSchema(obj) {
-    return (typeof obj ==='object' && '@id' in obj && '@type' in obj);
+    return (obj !== null && typeof obj ==='object' && '@id' in obj && '@type' in obj);
   }
 }

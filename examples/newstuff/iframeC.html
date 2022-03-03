@@ -7,8 +7,9 @@
   const obj = {
     foo: 'Live from C!',
     bar: (callback) => setTimeout(() => callback('Fun from C!'), 2000),
-    baz: (fn) => async (a, b) => (await fn(a, b)) * 2
+    baz: (fn, mult) => async (a, b) => (await fn(a, b)) * mult
   };
 
   ihop.export('obj', obj);
+  ihop.export('async', () => Promise.resolve('foo'));
 </script>

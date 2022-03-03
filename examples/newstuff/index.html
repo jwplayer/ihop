@@ -5,10 +5,11 @@
 <iframe id="iframe" src="iframeB.html"></iframe>
 <script>
   const ihop = new IHOP('root');
-  const f = async () => {
-    const fn = await ihop.tree.B.C.obj.baz((a, b) => a + b);
-    console.log(await fn(3, 5));
-  };
 
-  setTimeout(f, 2000);
+  (async () => {
+    await Promise.all([ihop.waitFor('B.C.obj'), ihop.waitFor('B.C.async')]);
+
+    const fn = await ihop.tree.B.C.obj.baz((a, b) => a + b, 3);
+    console.log(await fn(3, 5));
+  })();
 </script>

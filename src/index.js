@@ -17,7 +17,7 @@ export default class extends EventEmitter {
     this.name = name;
 
     // General Support
-    this.network = new Network();
+    this.network = new Network(options?.network);
 
     // Promise store holds promises that are waiting to be "completed"
     this.promiseStore = new PromiseStore();
@@ -53,34 +53,36 @@ export default class extends EventEmitter {
     this.export = (...args) => this.model.export(...args);
     this.view.on('changed', () => this.emit('changed'));
 
+    this.registerWorker = (worker)  => {
+      return this.network.registerWorker(worker);
+    };
 
-
-    this.waitForPromises = new Map();
+    this.waitForPromises_ = new Map();
 
     this.waitFor = (path) => {
       // Does a tracking promise already exist?
-      if (this.waitForPromises.has(path)) {
-        return this.waitForPromises.get(path);
+      if (this.waitForPromises_.has(path)) {
+        return this.waitForPromises_.get(path);
       }
 
       const pathParts = path.split('.');
       // Does property already exist?
-      const exists = !!pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
+      const exists = pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
 
-      if (exists) {
-        const promise = Promise.resolve(true);
-        this.waitForPromises.set(path, promise);
+      if (!!exists) {
+        const promise = Promise.resolve(exists);
+        this.waitForPromises_.set(path, promise);
         return promise;
       } else {
         const promise = new Promise((accept, reject) => {
           this.view.on('changed', () => {
-            const exists = !!pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
-            if (exists) {
-              accept(true);
+            const exists = pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
+            if (!!exists) {
+              accept(exists);
             }
           });
         });
-        this.waitForPromises.set(path, promise);
+        this.waitForPromises_.set(path, promise);
         return promise;
       }
     };

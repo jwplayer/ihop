@@ -1,6 +1,7 @@
 import isStructuredCloneable from './is-structured-cloneable';
 import { nanoid } from 'nanoid';
 import EventEmitter from 'eventemitter3';
+import global from 'global';
 
 /**
  * Iframe Hopper Base - contains the functionality related to maintaining a
@@ -26,7 +27,7 @@ export default class Model extends EventEmitter {
     this.router = router;
     this.proxySchema = proxySchema;
 
-    if (window.parent !== window) {
+    if (global.parent !== global) {
       this.registerWithParent_();
     }
 

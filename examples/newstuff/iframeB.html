@@ -4,4 +4,8 @@
 <iframe id="iframe" src="iframeC.html"></iframe>
 <script>
   const ihop = new IHOP('B');
+
+  ihop.export('foo', async () => {
+    return 'Hello World';
+  });
 </script>

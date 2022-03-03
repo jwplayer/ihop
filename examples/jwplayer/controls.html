@@ -29,15 +29,9 @@
   }
   const ihop = new IHOP('controls', options);
 
-  let setup = false;
+  (async () => {
+    await ihop.waitFor('jwplayer.player');
 
-  ihop.on('changed', () => {
-    console.log(ihop.tree);
-    // Wait for the objects we need.to be available..
-    if (setup || !ihop.tree.jwplayer?.player) {
-      return;
-    }
-    setup = true;
     console.debug('Found jwplayer...');
 
     // This jwplayer is in iframe "jwplayer"
@@ -62,5 +56,5 @@
       const seekToTime = duration * ratio;
       JWPLAYER.seek(seekToTime);
     });
-  });
+  })();
 </script>

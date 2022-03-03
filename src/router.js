@@ -36,7 +36,12 @@ export default class Router extends EventEmitter {
     const { destination } = message;
 
     if (process.env.NODE_ENV === 'dev') {
-      console.debug('what>>', message.type, 'at>>', this.path || this.name, 'from>>', message.from || '<root>', 'destination>>', message.destination || '<root>' , 'data>>', message);
+      const at = this.path || this.name;
+      const from = message.from || '<root>';
+      if (at !== from) {
+        const destination = message.destination || '<root>';
+        console.debug('what>>', message.type, 'at>>', at, 'from>>', from, 'destination>>', destination, 'data>>', message);
+      }
     }
 
     if (typeof destination === 'undefined' || this.isDestinationSelf_(destination)) {

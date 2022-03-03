@@ -2,11 +2,12 @@ import sameOrigin from './same';
 import EventEmitter from 'eventemitter3';
 import { nanoid } from 'nanoid';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants';
+import global from 'global';
 
 const defaultOptions = {
   parentOrigin: '*',
+  parentWindow: (global && global.parent !== global) ? global.parent : null,
   allowedOrigins: [],
-  parentWindow: (window.parent !== window) ? window.parent : null,
 };
 
 class Node {
@@ -18,6 +19,17 @@ class Node {
   send(message) {
     if (this.window) {
       this.window.postMessage(message, this.origin);
+    }
+  }
+}
+
+class WorkerNode extends Node {
+  constructor(id, window, origin) {
+    super(id, window, origin);
+  }
+  send(message) {
+    if (this.window) {
+      this.window.postMessage(message);
     }
   }
 }
@@ -39,11 +51,18 @@ export default class Network extends EventEmitter {
     }
 
     // Setup message pump
-    window.addEventListener('message', (...args) => this.onMessage(...args));
+    global.addEventListener('message', (...args) => this.onMessage(...args));
 
     if (finalOptions.parentWindow) {
       this.parentId_ = nanoid();
-      const parentNode = new Node(this.parentId_, finalOptions.parentWindow, finalOptions.parentOrigin);
+
+      let parentNode;
+
+      if (global['WorkerGlobalScope'] && global instanceof WorkerGlobalScope) {
+        parentNode = new WorkerNode(this.parentId_, finalOptions.parentWindow, finalOptions.parentOrigin);
+      } else {
+        parentNode = new Node(this.parentId_, finalOptions.parentWindow, finalOptions.parentOrigin);
+      }
       this.nodes_.set(this.parentId_, parentNode);
       this.sourceToId_.set(finalOptions.parentWindow, this.parentId_);
     }
@@ -54,6 +73,16 @@ export default class Network extends EventEmitter {
       version: IHOP_VERSION,
       data
     };
+  }
+
+  registerWorker(worker) {
+    const workerId = nanoid();
+    const workerNode = new WorkerNode(workerId, worker, '*');
+
+    this.nodes_.set(workerId, workerNode);
+    this.sourceToId_.set(worker, workerId);
+
+    worker.addEventListener('message', (...args) => this.onMessage(...args));
   }
 
   toNode(nodeId, message) {
@@ -92,8 +121,13 @@ export default class Network extends EventEmitter {
    * @param  {window} eventSource - The source window the event originated from
    */
   onMessage(message) {
-    const { origin, source, data } = message;
+    const { origin, srcElement, data } = message;
+    let { source } = message;
     const { allowedOrigins } = this.options_;
+
+    if (!source) {
+      source = srcElement;
+    }
 
     if (!data || !data.data || !source) {
       return;
@@ -137,7 +171,6 @@ export default class Network extends EventEmitter {
       nodeId: sourceId,
     });
 
-    //console.debug('what>>', newMessage.type, 'from>>', newMessage.from,'data>>', newMessage);
 
     this.emit('message', newMessage);
   }

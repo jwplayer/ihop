@@ -19,14 +19,15 @@
 <iframe id="iframe" src="iframeA.html"></iframe>
 <script>
   const ihop = new IHOP('main');
-  let setup = false;
 
-  ihop.addEventListener('changed', () => {
-    // Wait for the objects we need.to be available..
-    if (setup || !ihop.tree.A?.video || !ihop.tree.A?.B?.buyNow || !ihop.tree.A?.B?.buyNowContainer) {
-      return;
-    }
-    setup = true;
+  // Wait for the objects we need.to be available..
+  (async () => {
+    await Promise.all([
+      ihop.waitFor('A.video'),
+      ihop.waitFor('A.B.buyNow'),
+      ihop.waitFor('A.B.buyNowContainer')
+    ]);
+
     // This video element is in iframe "A"
     const videoEl = ihop.tree.A.video;
     const currTimeProg = document.querySelector('#progress')
@@ -71,7 +72,7 @@
     buyNowEl.addEventListener('click', () => {
       document.querySelector('#shoppingcart').innerHTML += "Dolphins DVD - $29.99<br>";
     });
-  });
+  })();
 </script>
 <div>
   <h1>Parent Page Controls</h1>

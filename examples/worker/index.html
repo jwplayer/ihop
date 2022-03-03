@@ -1,0 +1,16 @@
+<html>
+<body>
+<script src="../../dist/ihop.js"></script>
+<h1>No Worker Here</h1>
+<div id="foo">
+</div>
+<script>
+  const ihop = new IHOP('root');
+  const worker = new Worker('worker.js');
+
+  ihop.registerWorker(worker);
+
+  // worker.addEventListener('message', console.log);
+  // worker.postMessage('test');
+  ihop.export('div', document.querySelector('#foo'));
+</script>

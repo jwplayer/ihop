@@ -31,7 +31,7 @@
 </style>
 <body>
 <script src="../../dist/ihop.js"></script>
-<video>
+<video loop>
   <source src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
   <track default id="english" label="English" kind="captions" srclang="en" src="example-captions.vtt" />
 </video>
@@ -40,6 +40,6 @@
   const ihop = new IHOP('A');
   const videoEl = document.querySelector('video');
 
-  ihop.export('video', videoEl, ['play', 'playing', 'timeupdate', 'pause', 'volumechange']);
+  ihop.export('video', videoEl);
 </script>
 <iframe id="iframeC" src="iframeC.html"></iframe>
