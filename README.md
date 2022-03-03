@@ -61,7 +61,7 @@ Now in B, you want to use that function:
 <script>
   const ihop = new IHOP(‘B’);
 
-  ihop.waitFor(‘B.compose’).then(async (compose) => {
+  ihop.waitFor(‘A.compose’).then(async (compose) => {
     const add = (a, b) => a + b;
     const double = (n) => n * 2;
 
