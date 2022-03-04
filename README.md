@@ -1,6 +1,13 @@
-# IHOP
+# IHOP - *The <iframe> Hopping Library*
 
-IHOP is a utility to allow for objects from one iframe context to be usable from many connected contexts. At its core, IHOP is two things: a featureful proxy engine and a globally-coherent state built and maintained via inter-frame messaging.
+IHOP is a utility to allow for objects from one iframe context to be usable from many connected contexts.
+  
+The term i-frame hopping refers that each participant in the "network" (tree, really) of window objects only communicates with it's immediate parent and children. Sending messages to window contexts beyond the immediate family must be repeated by intermediate nodes (hopping).
+  
+At its core, IHOP is three things:
+1. A featureful proxy engine that can generate proxies for complex objects (even DOM elements)
+2. A network-agnostic routing fabric designed for hierarchical topologies
+3. a globally-coherent state built on top of the routing fabric
 
 ## Usage
 
