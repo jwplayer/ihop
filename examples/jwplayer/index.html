@@ -12,10 +12,22 @@ iframe {
 
   if (location.href.indexOf('transmuxer-output') !== -1) {
     options.network.parentOrigin = 'https://jrivera-projects.s3.amazonaws.com/';
-    options.network.allowedOrigins = [ 'https://jrivera-projects.s3.amazonaws.com/' ];
+    options.network.allowedOrigins = [
+      'https://jrivera-projects.s3.amazonaws.com/',
+      'https://jrivera-alternate.s3.amazonaws.com/',
+    ];
   } else if (location.href.indexOf('jrivera-projects') !== -1) {
     options.network.parentOrigin = 'https://transmuxer-output.s3.amazonaws.com/';
-    options.network.allowedOrigins = [ 'https://transmuxer-output.s3.amazonaws.com/' ];
+    options.network.allowedOrigins = [
+      'https://transmuxer-output.s3.amazonaws.com/',
+      'https://jrivera-alternate.s3.amazonaws.com/',
+    ];
+  } else if (location.href.indexOf('jrivera-alternate') !== -1) {
+    options.network.parentOrigin = 'https://transmuxer-output.s3.amazonaws.com/';
+    options.network.allowedOrigins = [
+      'https://transmuxer-output.s3.amazonaws.com/',
+      'https://jrivera-projects.s3.amazonaws.com/',
+    ];
   } else {
     options.network.parentOrigin = 'http://127.0.0.1:8080/';
     options.network.allowedOrigins = [ 'http://127.0.0.1:8080/' ];
@@ -30,9 +42,12 @@ iframe {
 
   if (location.href.indexOf('transmuxer-output') !== -1) {
     iframeUrlA = 'https://jrivera-projects.s3.amazonaws.com/IHOP/examples/jwplayer/jwplayer.html';
+    iframeUrlB = 'https://jrivera-alternate.s3.amazonaws.com/IHOP/examples/jwplayer/controls.html';
+  } else if (location.href.indexOf('jrivera-alternate') !== -1) {
+    iframeUrlA = 'https://transmuxer-output.s3.amazonaws.com/IHOP/examples/jwplayer/jwplayer.html';
     iframeUrlB = 'https://jrivera-projects.s3.amazonaws.com/IHOP/examples/jwplayer/controls.html';
   } else if (location.href.indexOf('jrivera-projects') !== -1) {
-    iframeUrlA = 'https://transmuxer-output.s3.amazonaws.com/IHOP/examples/jwplayer/jwplayer.html';
+    iframeUrlA = 'https://jrivera-alternate.s3.amazonaws.com/IHOP/examples/jwplayer/jwplayer.html';
     iframeUrlB = 'https://transmuxer-output.s3.amazonaws.com/IHOP/examples/jwplayer/controls.html';
   }
 

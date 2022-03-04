@@ -33,7 +33,7 @@ export default class extends EventEmitter {
     this.proxySchema = new ProxySchema(this.router, this.promiseStore, this.retainedStore);
 
     // The model that housed both local and global state
-    this.model = new Model(this.router, this.proxySchema);
+    this.model = new Model(this.router, this.proxySchema, options?.model);
 
     // The view of the global state as proxies
     this.view = new View(this.model, this.proxySchema);
@@ -50,8 +50,9 @@ export default class extends EventEmitter {
     this.reflector = new Reflector(this.router, this.proxySchema, this.retainedStore);
 
     this.tree = this.view.tree;
-    this.export = (...args) => this.model.export(...args);
     this.view.on('changed', () => this.emit('changed'));
+
+    this.export = (...args) => this.model.export(...args);
 
     this.registerWorker = (worker)  => {
       return this.network.registerWorker(worker);

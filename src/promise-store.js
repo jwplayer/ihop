@@ -14,7 +14,7 @@ const Esimorp = () => {
 export default class PromiseStore {
   constructor() {
     this.store = new Map(/*<uuid, weakref(promise)>*/);
-    this.highWatermark = 1;
+    this.highWatermark = 100;
   }
 
   makePromise() {

@@ -3,14 +3,19 @@ import { nanoid } from 'nanoid';
 import EventEmitter from 'eventemitter3';
 import global from 'global';
 
+const defaultOptions = {
+  forceRoot: false,
+};
+
 /**
  * Iframe Hopper Base - contains the functionality related to maintaining a
  * globally consistent state between iframes.
  */
 export default class Model extends EventEmitter {
-  constructor(router, proxySchema) {
+  constructor(router, proxySchema, options = {}) {
     super();
-    //this.options_ = Object.assign({}, defaultOptions, options);
+
+    const finalOptions = Object.assign({}, defaultOptions, options);
 
     this.childTreeVersions_ = new Map();
     this.localTreeVersion_ = 1;
@@ -27,7 +32,7 @@ export default class Model extends EventEmitter {
     this.router = router;
     this.proxySchema = proxySchema;
 
-    if (global.parent !== global) {
+    if (global.parent !== global && finalOptions.forceRoot !== true) {
       this.registerWithParent_();
     }
 

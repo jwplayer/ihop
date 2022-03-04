@@ -19,10 +19,13 @@
 
   if (location.href.indexOf('transmuxer-output') !== -1) {
     options.network.parentOrigin = 'https://jrivera-projects.s3.amazonaws.com/';
-    options.network.allowedOrigins = [ 'https://jrivera-projects.s3.amazonaws.com/' ];
-  } else if (location.href.indexOf('jrivera-projects') !== -1) {
-    options.network.parentOrigin = 'https://transmuxer-output.s3.amazonaws.com/';
     options.network.allowedOrigins = [ 'https://transmuxer-output.s3.amazonaws.com/' ];
+  } else if (location.href.indexOf('jrivera-projects') !== -1) {
+    options.network.parentOrigin = 'https://jrivera-alternate.s3.amazonaws.com/';
+    options.network.allowedOrigins = [ 'https://jrivera-projects.s3.amazonaws.com/' ];
+  } else if (location.href.indexOf('jrivera-alternate') !== -1) {
+    options.network.parentOrigin = 'https://transmuxer-output.s3.amazonaws.com/';
+    options.network.allowedOrigins = [ 'https://jrivera-alternate.s3.amazonaws.com/' ];
   } else {
     options.network.parentOrigin = 'http://127.0.0.1:8080/';
     options.network.allowedOrigins = [ 'http://127.0.0.1:8080/' ];
