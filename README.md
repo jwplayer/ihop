@@ -13,13 +13,13 @@ Step 2 - Initialize ihop
 ````html
 <script type="text/javascript">
   const ihop = new IHOP('pick_a_namespace');
-</script>
+  ...
 ````
 
 Step 3 - Either export an object
 ````html
-<script type="text/javascript">
-  ihop.export(‘test’, { foo: ‘bar’ });
+  ...
+  ihop.export('test', { foo: 'bar' });
 </script>
 ````
 
@@ -27,7 +27,7 @@ Step 4 - Use an object from the IHOP runtime
 ````html
 <script type="text/javascript">
   // This is assuming that we are in another iframe:
-  ihop.waitFor(‘pick_a_namespace.test’).then((test) => {
+  ihop.waitFor('pick_a_namespace.test').then((test) => {
     console.log(test.foo);
   });
 </script>
@@ -45,11 +45,11 @@ For example let's say that you export a function that returns a function from I-
 
 ````html
 <script type="text/javascript">
-  const ihop = new IHOP(‘A’);
+  const ihop = new IHOP('A');
 
   const compose = (fnA, fnB) => async (...args) => await fnA(await fnB(...args));
 
-  ihop.export(‘compose’, compose);
+  ihop.export('compose', compose);
 </script>
 ````
 
@@ -59,9 +59,9 @@ Now in B, you want to use that function:
 
 ````html
 <script type="text/javascript">
-  const ihop = new IHOP(‘B’);
+  const ihop = new IHOP('B');
 
-  ihop.waitFor(‘A.compose’).then(async (compose) => {
+  ihop.waitFor('A.compose').then(async (compose) => {
     const add = (a, b) => a + b;
     const double = (n) => n * 2;
 
