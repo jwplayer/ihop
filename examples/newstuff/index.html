@@ -6,7 +6,7 @@
 <script>
   const ihop = new IHop('root');
 
-  ihop.waitFor('B.C.compose').then(async (compose) => {
+  ihop.waitFor('root.B.C.compose').then(async (compose) => {
     const add = (a, b) => a + b;
     const double = (n) => n * 2;
 

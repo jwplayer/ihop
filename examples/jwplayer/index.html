@@ -55,7 +55,7 @@ iframe {
   document.body.appendChild(mainH1);
 
   const jwH2 = document.createElement('h2');
-  const jwOrigin = (new URL(iframeUrlA)).origin;
+  const jwOrigin = (new URL(iframeUrlA, location.href)).origin;
   jwH2.innerHTML = 'Player iframe origin - ' + jwOrigin;
   document.body.appendChild(jwH2);
 
@@ -67,7 +67,7 @@ iframe {
   document.body.appendChild(jwIframe);
 
   const ctrlH2 = document.createElement('h2');
-  const ctrlOrigin = (new URL(iframeUrlB)).origin;
+  const ctrlOrigin = (new URL(iframeUrlB, location.href)).origin;
   ctrlH2.innerHTML = 'Controls iframe origin - ' + ctrlOrigin;
   document.body.appendChild(ctrlH2);
 

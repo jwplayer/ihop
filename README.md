@@ -26,10 +26,8 @@ Step1 - Include IHop on your page
 ```
 
 Step 2 - Initialize ihop
-```html
-<script type="text/javascript">
+```js
   const ihop = new IHop('pick_a_namespace');
-  ...
 ```
 
 Step 3a - Either export an object...
@@ -115,25 +113,20 @@ Waits for a specific path to becomes available and then resolves the promise wit
 
 | Param | Type | Description |
 | --- | --- | --- |
-| path | <code>string</code> | A path is one or more namespaces separated by a period (.) and optionally a final exported name. NOTE: The root namespace is omitted when forming a path. |
+| path | <code>string</code> | A path is one or more namespaces separated by a period (.) and optionally a final exported name. |
 
 **Example**
 ```js
-// An iframe with the namespace `A` contains another iframe with the namespace `B`
+// An iframe with the namespace `A` is the root namespace and contains another iframe with the namespace `B`
 // The iframe `B` exports an object named `foo`
 > ihop.waitFor('A.B.foo').then((foo) => {
     // Do something with 'foo'
   });
 
-// The root-context - ie. the main page - exports an object named `bar`
-> ihop.waitFor('bar').then((bar) => {
-    // Do something with 'bar'
-  });
-
 // Wait for more than one export
 > Promise.all([
       ihop.waitFor('A.B.foo'),
-      ihop.waitFor('bar')
+      ihop.waitFor('A.bar')
     ]).then(([foo, bar]) => {
     // Do something with 'foo' and 'bar'
   });
@@ -158,7 +151,7 @@ Register a web worker context. Workers are not able to automatically register th
 
 <a name="IHop.tree"></a>
 ### ihop.tree ⇒ <code>object</code>
-The root namespace under which all other namepspaces and their exports reside.
+Contains the exported namespace hierarchy.
 
 **Kind**: instance property of <code>[IHop](#IHop)</code>
 

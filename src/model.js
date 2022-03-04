@@ -106,7 +106,7 @@ export default class Model extends EventEmitter {
 
       if (this.isRoot) {
         // Start poking to send global state down the tree
-        this.globalTree_ = this.localTree_;
+        this.globalTree_ = { [this.router.name]: this.localTree_ };
         this.globalTreeVersion_ = this.localTreeVersion_;
         // Start propagating downwards
         this.pokeState_();

@@ -5,7 +5,7 @@ export default class Router extends EventEmitter {
   constructor(name, network) {
     super();
     this.name = name;
-    this.path = '';
+    this.path = name;
 
     this.network = network;
     this.nodeMap_ = new Map(/* <path, nodeId> */);
@@ -36,10 +36,10 @@ export default class Router extends EventEmitter {
     const { destination } = message;
 
     if (process.env.NODE_ENV === 'dev') {
-      const at = this.path || this.name;
-      const from = message.from || '<root>';
+      const at = this.name;
+      const from = message.from;
       if (at !== from) {
-        const destination = message.destination || '<root>';
+        const destination = message.destination;
         console.debug('what>>', message.type, 'at>>', at, 'from>>', from, 'destination>>', destination, 'data>>', message);
       }
     }

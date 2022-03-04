@@ -33,7 +33,7 @@
   const ihop = new IHop('controls', options);
 
   // This jwplayer is in iframe "jwplayer"
-  ihop.waitFor('jwplayer.player').then(async (JWPLAYER) => {
+  ihop.waitFor('main.jwplayer.player').then(async (JWPLAYER) => {
     console.debug('Found jwplayer...');
 
     const currTimeProg = document.querySelector('#progress');
