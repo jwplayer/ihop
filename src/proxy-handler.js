@@ -26,7 +26,7 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
         destination,
         from: router.name,
         source: router.path,
-        promiseId
+        promiseId,
       });
 
       return promise;
@@ -67,7 +67,7 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
         destination,
         from: router.name,
         source: router.path,
-        promiseId
+        promiseId,
       });
 
       return promise;
@@ -108,7 +108,6 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
         value,
         from: router.name,
         source: router.path,
-        // promiseId
       });
 
       return true;

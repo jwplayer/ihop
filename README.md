@@ -1,22 +1,22 @@
 # IHop: *The <iframe> Hopping Library*
 
-IHop is a utility to allow for objects from one iframe context to be usable from many connected contexts.
+IHop is a utility to allow for objects and functions from one iframe context to be usable from many connected contexts - even cross-origin - as though those objects were local.
 
-The term i-frame hopping refers to the fact that each participant in the "network" (tree, really) of window objects only communicates only with it's immediate parent and children. Sending messages to window contexts beyond the immediate family must be done by routing through each intermediate node(s) (ie. hopping).
+The term "iframe hopping" refers to the fact that each participant in the "network" (tree, really) of window objects only communicates only with it's immediate parent and children. Sending messages to window contexts beyond the immediate family must be done by routing through each intermediate node(s) (ie. hopping).
 
 At its core, IHop is three things:
-1. A featureful proxy engine that can generate proxies for complex objects (even DOM elements!)
+1. A proxy engine that can generate proxies for complex objects (even DOM elements!)
 2. A network-agnostic routing fabric designed for hierarchical topologies
-3. a globally-coherent state built on top of the routing fabric
+3. A globally-coherent state built on top of the routing fabric
 
 ## Get It
 1. Clone the repository
 2. `npm install`
 3. `npm run build`
 
-You will then have `ihop.js`, `ihop.js.map` and `ihop.min.js` in the `./dist` directory. They are UMD modules and therefore should work with the most popular module systems or as a script tag.
+You will then have `ihop.js` and `ihop.min.js` in the `./dist` directory. They are both UMD modules and therefore should work with the most popular module systems or as a script tag.
 
-The non-minified file does very noisy `console.debug` logging of every message and is not meant to be used for anything but development.
+The non-minified file does very noisy `console.debug` logging of every message that goes through the `Router` and should not be used for anything but development.
 
 ## Usage
 
@@ -172,9 +172,9 @@ Contains the exported namespace hierarchy.
 
 IHop has support for some pretty advanced proxying. Not only can you export DOM nodes and manipulate them as though they were local, but you can also treat functions as local too.
 
-This means that you can pass functions across the proxy and even return functions from other functions. The proxy engine handles all the fun stuff behind the scenes for you.
+This means that you can pass functions across the proxy as arguments and even return functions from other functions. The proxy engine handles all the fun stuff behind the scenes for you.
 
-For example let's say that you export a function that returns a function from I-frame A:
+For example let's say that you export a function that returns a function from iframe A:
 
 ```html
 <script type="text/javascript">

@@ -28,7 +28,7 @@ export default class Reflector {
       error,
       from: this.router.name,
       source: this.router.path,
-      promiseId
+      promiseId,
     });
   }
 

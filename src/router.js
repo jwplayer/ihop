@@ -33,14 +33,18 @@ export default class Router extends EventEmitter {
   }
 
   route(message) {
-    const { destination } = message;
+    const { destination, source, type, from, promiseId } = message;
 
     if (process.env.NODE_ENV === 'dev') {
       const at = this.name;
-      const from = message.from;
+
       if (at !== from) {
-        const destination = message.destination;
-        console.debug('what>>', message.type, 'at>>', at, 'from>>', from, 'destination>>', destination, 'data>>', message);
+        let srcDest = '';
+
+        if (source && destination) {
+          srcDest = `\t[${source} ⟹ ${destination}]`;
+        }
+        console.debug(`${type}:\t${from} ⟶ ${at}${srcDest}`, message);
       }
     }
 
