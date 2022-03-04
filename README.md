@@ -1,17 +1,17 @@
-# IHOP: *The <iframe> Hopping Library*
+# IHop: *The <iframe> Hopping Library*
 
-IHOP is a utility to allow for objects from one iframe context to be usable from many connected contexts.
+IHop is a utility to allow for objects from one iframe context to be usable from many connected contexts.
 
-The term i-frame hopping refers that each participant in the "network" (tree, really) of window objects only communicates with it's immediate parent and children. Sending messages to window contexts beyond the immediate family must be repeated by intermediate nodes (hopping).
+The term i-frame hopping refers to the fact that each participant in the "network" (tree, really) of window objects only communicates only with it's immediate parent and children. Sending messages to window contexts beyond the immediate family must be done by routing through each intermediate node(s) (ie. hopping).
 
-At its core, IHOP is three things:
-1. A featureful proxy engine that can generate proxies for complex objects (even DOM elements)
+At its core, IHop is three things:
+1. A featureful proxy engine that can generate proxies for complex objects (even DOM elements!)
 2. A network-agnostic routing fabric designed for hierarchical topologies
 3. a globally-coherent state built on top of the routing fabric
 
 ## Usage
 
-Step1 - Include ihop on your page
+Step1 - Include IHop on your page
 ````html
 <script type="text/javascript" src="ihop.min.js"></script>
 ````
@@ -19,7 +19,7 @@ Step1 - Include ihop on your page
 Step 2 - Initialize ihop
 ````html
 <script type="text/javascript">
-  const ihop = new IHOP('pick_a_namespace');
+  const ihop = new IHop('pick_a_namespace');
   ...
 ````
 
@@ -30,7 +30,7 @@ Step 3 - Either export an object
 </script>
 ````
 
-Step 4 - Use an object from the IHOP runtime
+Step 4 - Use an object from the IHop runtime
 ````html
 <script type="text/javascript">
   // This is assuming that we are in another iframe:
@@ -40,24 +40,24 @@ Step 4 - Use an object from the IHOP runtime
 </script>
 ````
 
-Congratulations! You’ve just successfully used IHOP to export an object across iframe barriers!
+Congratulations! You’ve just successfully used IHop to export an object across iframe barriers!
 
 ## API
 
-<a name="IHOP"></a>
-* [new IHOP(nameSpace, options)](#IHOP.constructor)
+<a name="IHop"></a>
+* [new IHop(nameSpace, options)](#IHop.constructor)
     * _methods_
-        * [.export(name, object)](#IHOP.export) ⇒ <code>void</code>
-        * [.waitFor(path)](#IHOP.waitFor) ⇒ <code>Promise</code>
-        * [.registerWorker(worker)](#IHOP.registerWorker) ⇒ <code>void</code>
+        * [.export(name, object)](#IHop.export) ⇒ <code>void</code>
+        * [.waitFor(path)](#IHop.waitFor) ⇒ <code>Promise</code>
+        * [.registerWorker(worker)](#IHop.registerWorker) ⇒ <code>void</code>
     * _properties_
-        * [.tree](#IHOP.tree)
+        * [.tree](#IHop.tree)
 
-<a name="IHOP.constructor"></a>
-### IHOP(nameSpace, options) ⇒ <code>instance</code>
-Construct the local IHOP instance.
+<a name="IHop.constructor"></a>
+### IHop(nameSpace, options) ⇒ <code>instance</code>
+Construct the local IHop instance.
 
-**Kind**: constructor of <code>[IHOP](#IHOP)</code>
+**Kind**: constructor of <code>[IHop](#IHop)</code>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -68,18 +68,18 @@ Construct the local IHOP instance.
 | [options.network] | <code>object</code> | Container for Network-related options. |
 | [options.network.allowedOrigins] | <code>array&lt;string&gt;</code> | A list of allowed origins for child nodes. Any messages received from origins not listed are immediately dropped. Leave empty to allow all origins. |
 | [options.network.parentOrigin] | <code>string</code> | The allowed origin to use when communicating with the context's parent. |
-| [options.network.parentWindow] | <code>window</code> | Override the default parent context. Mainly useful when initializing IHOP in an Worker context. |
+| [options.network.parentWindow] | <code>window</code> | Override the default parent context. Mainly useful when initializing IHop in an Worker context. |
 
 **Example**
 ```js
-> const ihop = new IHOP('myNameSpace');
+> const ihop = new IHop('myNameSpace');
 ```
 
-<a name="IHOP.export"></a>
+<a name="IHop.export"></a>
 ### ihop.export(name, object) ⇒ <code>void</code>
 Makes `object` available to every connected iframe via `name` within this iframe's namespace.
 
-**Kind**: instance method of <code>[IHOP](#IHOP)</code>
+**Kind**: instance method of <code>[IHop](#IHop)</code>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -88,18 +88,18 @@ Makes `object` available to every connected iframe via `name` within this iframe
 
 **Example**
 ```js
-> const ihop = new IHOP('foo');
+> const ihop = new IHop('foo');
 > const bar = {baz: 'hello!'};
 
 // Make the 'bar' object available in other contexts under 'foo.bar'
 > ihop.export('bar', baz);
 ```
 
-<a name="IHOP.waitFor"></a>
+<a name="IHop.waitFor"></a>
 ### ihop.waitFor(path) ⇒ <code>Promise</code>
 Waits for a specific path to becomes available and then resolves the promise with the object or namespace at that path.
 
-**Kind**: instance method of <code>[IHOP](#IHOP)</code>
+**Kind**: instance method of <code>[IHop](#IHop)</code>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -128,11 +128,11 @@ Waits for a specific path to becomes available and then resolves the promise wit
 
 ```
 
-<a name="IHOP.registerWorker"></a>
+<a name="IHop.registerWorker"></a>
 ### ihop.registerWorker(worker) ⇒ <code>void</code>
 Register a web worker context. Workers are not able to automatically register themselves like iframes and must be explicitly linked in their parent context.
 
-**Kind**: instance method of <code>[IHOP](#IHOP)</code>
+**Kind**: instance method of <code>[IHop](#IHop)</code>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -144,11 +144,11 @@ Register a web worker context. Workers are not able to automatically register th
 > ihop.registerWorker(worker);
 ```
 
-<a name="IHOP.tree"></a>
+<a name="IHop.tree"></a>
 ### ihop.tree ⇒ <code>object</code>
 The root namespace under which all other namepspaces and their exports reside.
 
-**Kind**: instance property of <code>[IHOP](#IHOP)</code>
+**Kind**: instance property of <code>[IHop](#IHop)</code>
 
 **Example**
 ```js
@@ -162,7 +162,7 @@ The root namespace under which all other namepspaces and their exports reside.
 
 ## Advanced
 
-IHOP has support for some pretty advanced proxying. Not only can you export DOM nodes and manipulate them as though they were local, but you can also treat functions as local too.
+IHop has support for some pretty advanced proxying. Not only can you export DOM nodes and manipulate them as though they were local, but you can also treat functions as local too.
 
 This means that you can pass functions across the proxy and even return functions from other functions. The proxy engine handles all the fun stuff behind the scenes for you.
 
@@ -170,7 +170,7 @@ For example let's say that you export a function that returns a function from I-
 
 ````html
 <script type="text/javascript">
-  const ihop = new IHOP('A');
+  const ihop = new IHop('A');
 
   const compose = (fnA, fnB) => async (...args) => await fnA(await fnB(...args));
 
@@ -184,7 +184,7 @@ Now in B, you want to use that function:
 
 ````html
 <script type="text/javascript">
-  const ihop = new IHOP('B');
+  const ihop = new IHop('B');
 
   ihop.waitFor('A.compose').then(async (compose) => {
     const add = (a, b) => a + b;

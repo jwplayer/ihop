@@ -11,7 +11,7 @@ import ProxySchema from './proxy-schema';
 
 import EventEmitter from 'eventemitter3';
 
-export default class extends EventEmitter {
+export default class IHop extends EventEmitter {
   constructor(name, options) {
     super();
     this.name = name;

@@ -4,7 +4,7 @@
 <iframe id="iframe" src="iframeA.html"></iframe>
 <iframe id="iframe" src="iframeB.html"></iframe>
 <script>
-  const ihop = new IHOP('root');
+  const ihop = new IHop('root');
 
   ihop.waitFor('B.C.compose').then(async (compose) => {
     const add = (a, b) => a + b;

@@ -2,7 +2,7 @@
 <body>
 <script src="../../dist/ihop.js"></script>
 <script>
-  const ihop = new IHOP('C');
+  const ihop = new IHop('C');
   const compose = (fnA, fnB) => async (...args) => fnA(await fnB(...args));
 
   ihop.export('compose', compose);

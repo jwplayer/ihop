@@ -9,7 +9,7 @@ export default {
   output: [{
       file: 'dist/ihop.min.js',
       format: 'iife',
-      name: 'IHOP',
+      name: 'IHop',
       plugins: [
         uglify()
       ],

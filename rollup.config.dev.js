@@ -9,7 +9,7 @@ export default {
     {
       file: 'dist/ihop.js',
       format: 'iife',
-      name: 'IHOP',
+      name: 'IHop',
       sourcemap: true
     }
   ],

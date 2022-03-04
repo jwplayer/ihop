@@ -1,6 +1,6 @@
 importScripts('../../dist/ihop.js');
 
-const ihop = new IHOP('work', {
+const ihop = new IHop('work', {
   network: {
     parentWindow: self,
   }

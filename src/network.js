@@ -148,10 +148,10 @@ export default class Network extends EventEmitter {
     const [major, minor] = version.split('.');
 
     if (major !== IHOP_MAJOR_VERSION) {
-      console.error('Received a message from an incompatible IHOP version', version, 'expecting', IHOP_VERSION);
+      console.error('Received a message from an incompatible IHop version', version, 'expecting', IHOP_VERSION);
       return;
     } else if (minor !== IHOP_MINOR_VERSION) {
-      console.warn('Received a message from a different IHOP version', version, 'expecting', IHOP_VERSION);
+      console.warn('Received a message from a different IHop version', version, 'expecting', IHOP_VERSION);
     }
 
     let sourceId;

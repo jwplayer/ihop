@@ -30,7 +30,7 @@
     options.network.parentOrigin = 'http://127.0.0.1:8080/';
     options.network.allowedOrigins = [ 'http://127.0.0.1:8080/' ];
   }
-  const ihop = new IHOP('controls', options);
+  const ihop = new IHop('controls', options);
 
   // This jwplayer is in iframe "jwplayer"
   ihop.waitFor('jwplayer.player').then(async (JWPLAYER) => {
