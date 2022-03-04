@@ -43,9 +43,12 @@ Step 4 - Use what you exported from another iframe or the parent context
 ```html
 <script type="text/javascript">
   // This is assuming that we are in another iframe:
-  ihop.waitFor('pick_a_namespace.test').then(async (test) => {
-    console.log(await test.foo);    //=> bar
-    console.log(await test.func()); //=> Hello world!
+  Promise.all([
+    ihop.waitFor('pick_a_namespace.test'),
+    ihop.waitFor('pick_a_namespace.func')
+  ]).then(async ([test, func]) => {
+    console.log(await test.foo);  //=> bar
+    console.log(await func());    //=> Hello world!
   });
 </script>
 ```
