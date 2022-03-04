@@ -9,36 +9,45 @@ At its core, IHop is three things:
 2. A network-agnostic routing fabric designed for hierarchical topologies
 3. a globally-coherent state built on top of the routing fabric
 
+## Get It
+1. Clone the repository
+2. `npm install`
+3. `npm run build`
+
+You will then have `ihop.js`, `ihop.js.map` and `ihop.min.js` in the `./dist` directory.
+
+The non-minified file does very verbose `console.debug` logging of every message.
+
 ## Usage
 
 Step1 - Include IHop on your page
-````html
+```html
 <script type="text/javascript" src="ihop.min.js"></script>
-````
+```
 
 Step 2 - Initialize ihop
-````html
+```html
 <script type="text/javascript">
   const ihop = new IHop('pick_a_namespace');
   ...
-````
+```
 
 Step 3 - Either export an object
-````html
+```html
   ...
   ihop.export('test', { foo: 'bar' });
 </script>
-````
+```
 
 Step 4 - Use an object from the IHop runtime
-````html
+```html
 <script type="text/javascript">
   // This is assuming that we are in another iframe:
   ihop.waitFor('pick_a_namespace.test').then((test) => {
     console.log(test.foo);
   });
 </script>
-````
+```
 
 Congratulations! You’ve just successfully used IHop to export an object across iframe barriers!
 
@@ -168,7 +177,7 @@ This means that you can pass functions across the proxy and even return function
 
 For example let's say that you export a function that returns a function from I-frame A:
 
-````html
+```html
 <script type="text/javascript">
   const ihop = new IHop('A');
 
@@ -176,13 +185,13 @@ For example let's say that you export a function that returns a function from I-
 
   ihop.export('compose', compose);
 </script>
-````
+```
 
 NOTE: When we execute the fnA and fnB functions, we need to `await` - any function passed between contexts has it’s return value encapsulated in a promise.
 
 Now in B, you want to use that function:
 
-````html
+```html
 <script type="text/javascript">
   const ihop = new IHop('B');
 
@@ -195,7 +204,7 @@ Now in B, you want to use that function:
    console.log(await sumAndDouble(3, 4));
   });
 </script>
-````
+```
 
 And it just works!
 
