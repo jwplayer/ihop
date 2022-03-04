@@ -8,7 +8,7 @@ export default {
   output: [
     {
       file: 'dist/ihop.js',
-      format: 'iife',
+      format: 'umd',
       name: 'IHop',
       sourcemap: true
     }

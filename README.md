@@ -14,9 +14,9 @@ At its core, IHop is three things:
 2. `npm install`
 3. `npm run build`
 
-You will then have `ihop.js`, `ihop.js.map` and `ihop.min.js` in the `./dist` directory.
+You will then have `ihop.js`, `ihop.js.map` and `ihop.min.js` in the `./dist` directory. They are UMD modules and therefore should work with the most popular module systems or as a script tag.
 
-The non-minified file does very verbose `console.debug` logging of every message.
+The non-minified file does very noisy `console.debug` logging of every message and is not meant to be used for anything but development.
 
 ## Usage
 

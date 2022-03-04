@@ -8,7 +8,7 @@ export default {
   input: 'src/index.js',
   output: [{
       file: 'dist/ihop.min.js',
-      format: 'iife',
+      format: 'umd',
       name: 'IHop',
       plugins: [
         uglify()
