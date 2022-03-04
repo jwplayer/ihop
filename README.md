@@ -74,6 +74,9 @@ Now in B, you want to use that function:
 
 And it just works!
 
+## Architecture
+<img src="https://docs.google.com/drawings/d/e/2PACX-1vR0bvjQoC98Li7Qj7g5TR4qwF3PdBLQ8jnt2-MsfVc4n1sbPMKC08_pfqQ4-Z3mvOOawE8q-neWdWyc/pub?w=1440&amp;h=1080">
+
 ## Caveats
 
 There are a few things to be aware of wehn using this library.
