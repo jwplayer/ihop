@@ -50,10 +50,14 @@ iframe {
     iframeUrlA = 'https://jrivera-alternate.s3.amazonaws.com/IHOP/examples/jwplayer/jwplayer.html';
     iframeUrlB = 'https://transmuxer-output.s3.amazonaws.com/IHOP/examples/jwplayer/controls.html';
   }
+  const mainH1 = document.createElement('h1');
+  mainH1.innerHTML = 'Main page origin - ' + location.origin;
+  document.body.appendChild(mainH1);
 
-  const jwH1 = document.createElement('h1');
-  jwH1.innerHTML = 'Player in iframe';
-  document.body.appendChild(jwH1);
+  const jwH2 = document.createElement('h2');
+  const jwOrigin = (new URL(iframeUrlA)).origin;
+  jwH2.innerHTML = 'Player iframe origin - ' + jwOrigin;
+  document.body.appendChild(jwH2);
 
   const jwIframe = document.createElement('iframe');
   jwIframe.src = iframeUrlA;
@@ -62,9 +66,10 @@ iframe {
   jwIframe.setAttribute('allowfullscreen', 'allowfullscreen');
   document.body.appendChild(jwIframe);
 
-  const ctrlH1 = document.createElement('h1');
-  ctrlH1.innerHTML = 'Controls in iframe';
-  document.body.appendChild(ctrlH1);
+  const ctrlH2 = document.createElement('h2');
+  const ctrlOrigin = (new URL(iframeUrlB)).origin;
+  ctrlH2.innerHTML = 'Controls iframe origin - ' + ctrlOrigin;
+  document.body.appendChild(ctrlH2);
 
   const ctrlIframe = document.createElement('iframe');
   ctrlIframe.src = iframeUrlB;
