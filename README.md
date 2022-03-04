@@ -32,24 +32,27 @@ Step 2 - Initialize ihop
   ...
 ```
 
-Step 3 - Either export an object
-```html
-  ...
+Step 3a - Either export an object...
+```js
   ihop.export('test', { foo: 'bar' });
-</script>
+```
+Step 3b - ...or a function
+```js
+  ihop.export('func', () => 'Hello world!');
 ```
 
-Step 4 - Use an object from the IHop runtime
+Step 4 - Use what you exported from another iframe or the parent context
 ```html
 <script type="text/javascript">
   // This is assuming that we are in another iframe:
-  ihop.waitFor('pick_a_namespace.test').then((test) => {
-    console.log(test.foo);
+  ihop.waitFor('pick_a_namespace.test').then(async (test) => {
+    console.log(await test.foo);    //=> bar
+    console.log(await test.func()); //=> Hello world!
   });
 </script>
 ```
 
-Congratulations! You’ve just successfully used IHop to export an object across iframe barriers!
+Congratulations! You’ve just successfully used IHop to export an object and a function across those pesky iframe barriers!
 
 ## API
 
