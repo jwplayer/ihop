@@ -6,26 +6,26 @@ IHOP is a utility to allow for objects from one iframe context to be usable from
 
 Step1 - Include ihop on your page
 ````js
-<script src="ihop.min.js"></script>
+<script type="text/javascript" src="ihop.min.js"></script>
 ````
 
 Step 2 - Initialize ihop
 ````js
-<script>
+<script type="text/javascript">
   const ihop = new IHOP('pick_a_namespace');
 </script>
 ````
 
 Step 3 - Either export an object
 ````js
-<script>
+<script type="text/javascript">
   ihop.export(‘test’, { foo: ‘bar’ });
 </script>
 ````
 
 Step 4 - Use an object from the IHOP runtime
 ````js
-<script>
+<script type="text/javascript">
   // This is assuming that we are in another iframe:
   ihop.waitFor(‘pick_a_namespace.test’).then((test) => {
     console.log(test.foo);
@@ -44,7 +44,7 @@ This means that you can pass functions across the proxy and even return function
 For example let's say that you export a function that returns a function from I-frame A:
 
 ````js
-<script>
+<script type="text/javascript">
   const ihop = new IHOP(‘A’);
 
   const compose = (fnA, fnB) => async (...args) => await fnA(await fnB(...args));
@@ -58,7 +58,7 @@ NOTE: When we execute the fnA and fnB functions, we need to `await` - any functi
 Now in B, you want to use that function:
 
 ````js
-<script>
+<script type="text/javascript">
   const ihop = new IHOP(‘B’);
 
   ihop.waitFor(‘A.compose’).then(async (compose) => {
