@@ -9,6 +9,14 @@ At its core, IHop is three things:
 2. A network-agnostic routing fabric designed for hierarchical topologies
 3. A globally-coherent state built on top of the routing fabric
 
+### Table of Contents
+* [Get It](#get-it)
+* [Quick Usage](#usage)
+* [API](#api)
+* [Advanced](#advanced)
+* [Architecture Diagram](#architecture)
+* [Caveats](#caveats)
+
 ## Get It
 1. Clone the repository
 2. `npm install`
@@ -16,9 +24,9 @@ At its core, IHop is three things:
 
 You will then have `ihop.js` and `ihop.min.js` in the `./dist` directory. They are both UMD modules and therefore should work with the most popular module systems or as a script tag.
 
-The non-minified file does very noisy `console.debug` logging of every message that goes through the `Router` and should not be used for anything but development.
+**NOTE**: The non-minified file does very noisy `console.debug` logging of every message that goes through the `Router` and should only be used for development.
 
-## Usage
+## Quick Usage
 
 Step1 - Include IHop on your page
 ```html
@@ -170,7 +178,7 @@ Contains the exported namespace hierarchy.
 
 ## Advanced
 
-IHop has support for some pretty advanced proxying. Not only can you export DOM nodes and manipulate them as though they were local, but you can also treat functions as local too.
+IHop has support for some pretty advanced proxying. Not only can you export DOM nodes and manipulate them as though they were local, but you can also *treat functions as local* too!
 
 This means that you can pass functions across the proxy as arguments and even return functions from other functions. The proxy engine handles all the fun stuff behind the scenes for you.
 
@@ -228,7 +236,7 @@ Exported objects are running in different threads and the library doesn't provid
 
 There are obviously going to be places where the proxying breaks down but every attempt has been made to make it as transparent as possible.
 
-Currently unsupported operations on objects:
-1. constructors
-2. get/setPrototypeOf
-3. delete statement on properties
+Currently unsupported operations on proxies:
+1. Both `getPrototypeOf`/`setPrototypeOf`
+2. The `delete` operator
+3. The `in` operator
