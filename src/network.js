@@ -157,7 +157,7 @@ export default class Network extends EventEmitter {
     let sourceId;
 
     // Register this node if we have never seen it before...
-    if (!this.sourceToId_.has(source)) {
+    if (source !== global && !this.sourceToId_.has(source)) {
       sourceId = nanoid();
       const node = new Node(sourceId, source, origin);
 
