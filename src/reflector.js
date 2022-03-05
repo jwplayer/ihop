@@ -14,10 +14,28 @@ export default class Reflector {
     this.router.on('call', (message) => this.onCall(message));
   }
 
-  doReturn (message, value, error) {
+  makeArgs_(args, source) {
+    // if any arguments are functions - ie. callbacks:
+    // 1) get the remote function id
+    // 2) generate proxy function that calls to that id
+    // 3) replace parameter with proxy
+    return args.map((arg) => {
+      if (!this.proxySchema.isSchema(arg)){
+        return arg;
+      }
+
+      // Finalization needs to be tracked so the references can be
+      // deleted at the "source" node
+      const proxy = this.proxySchema.fromSchema(arg, source, true);
+
+      return proxy;
+    });
+  };
+
+  doReturn (message, value, error, forceProxy = false) {
     const { source, promiseId} = message;
 
-    if (!isStructuredCloneable(value)) {
+    if (forceProxy || !isStructuredCloneable(value)) {
       value = this.proxySchema.toSchema(value);
     }
 
@@ -53,31 +71,13 @@ export default class Reflector {
 
   async onCall(message) {
     const {targetName, args, source } = message;
-    // if any arguments are functions - ie. callbacks:
-    // 1) get the remote function id
-    // 2) generate proxy function that calls to that id
-    // 3) replace parameter with proxy
+    const newArgs = this.makeArgs_(args, source);
 
     try {
-      const newArgs = args.map((arg) => {
-        if (!this.proxySchema.isSchema(arg)){
-          return arg;
-        }
-
-        // Finalization needs to be tracked so the references can be
-        // deleted at the "source" node
-        const proxy = this.proxySchema.fromSchema(arg, source, true);
-
-        // this.finalizationRegistry.register(proxy, {
-        //   destination: source,
-        //   retainedId
-        // });
-
-        return proxy;
-      });
-
       const target = this.retainedStore.get(targetName);
+
       if (!target) {
+        // Should probably return an exception
         return this.doReturn(message, undefined);
       }
 

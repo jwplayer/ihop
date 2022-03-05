@@ -2,8 +2,9 @@ import { nanoid } from 'nanoid';
 import isStructuredCloneable from './is-structured-cloneable';
 import ProxyHandler from './proxy-handler';
 import generatePath from './generate-path';
+import { IHOP_PROXY_TAG } from './constants';
 
-const noop = () => {};
+const noop = function() {};
 
 export default class ProxySchema {
   constructor(router, promiseStore, retainedStore) {
@@ -112,7 +113,7 @@ export default class ProxySchema {
   }
 
   fromSchema(schema, path, needsFinalization = false) {
-    let obj = {};
+    let obj;
 
     if(typeof schema === 'object') {
       if (this.isSchema(schema)) {
@@ -123,6 +124,7 @@ export default class ProxySchema {
         } else if (type === '@object') {
           obj = {};
         }
+        obj[IHOP_PROXY_TAG] = schema;
 
         if ('@children' in schema) {
           this.deepFromSchema_(schema['@children'], obj, path, needsFinalization);
@@ -139,6 +141,8 @@ export default class ProxySchema {
         }
       } else {
         obj = {};
+        obj[IHOP_PROXY_TAG] = schema;
+
         this.deepFromSchema_(schema, obj, generatePath(path, key), needsFinalization);
       }
     } else {

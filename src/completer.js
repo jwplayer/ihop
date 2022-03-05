@@ -1,3 +1,5 @@
+import { IHOP_PROXY_TAG } from './constants';
+
 export default class Completer {
   constructor(router, promiseStore, proxySchema) {
     this.router = router;
@@ -18,6 +20,8 @@ export default class Completer {
       // Finalization needs to be tracked so the references can be
       // deleted at the "source" node
       value = this.proxySchema.fromSchema(value, source, true);
+    } else if (value && value[IHOP_PROXY_TAG]) {
+      value = value[IHOP_PROXY_TAG];
     }
 
     if (typeof error === 'undefined') {

@@ -1,23 +1,28 @@
 import isStructuredCloneable from './is-structured-cloneable';
+import { IHOP_PROXY_TAG } from './constants';
 
 const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName) => {
+  const sanitizeArgs = (args) => {
+    // if one of the arguments is a function - ie. a callback:
+    // 1) store function locally in a store and get a uuid
+    // 2) replace argument with uuid
+    return args.map((arg) => {
+      if (isStructuredCloneable(arg)) {
+        return arg;
+      }
+      if (arg[IHOP_PROXY_TAG]) {
+        return arg[IHOP_PROXY_TAG];
+      }
+      return proxySchema.toSchema(arg);
+    });
+  };
+
   return {
     apply(targetFn, thisArgs, args, receiver) {
       // A trap for a function call
       // Arguments might need to be handled specially
       const [promiseId, promise] = promiseStore.makePromise();
-
-      // if one of the arguments is a function - ie. a callback:
-      // 1) store function locally in a store and get a uuid
-      // 2) replace argument with uuid
-      const safeArgs = args.map((arg) => {
-        if (isStructuredCloneable(arg)) {
-          return arg;
-        }
-        if (!(arg instanceof Event)) {
-          return proxySchema.toSchema(arg);
-        }
-      });
+      const safeArgs = sanitizeArgs(args);
 
       router.route({
         type: 'call',
@@ -41,13 +46,13 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
     },
 
     deleteProperty() {
-
+      return false;
     },
 
     get(targetObj, property, receiver) {
       const propType = typeof targetObj[property];
 
-      if (propType === 'object' || propType === 'function') {
+      if (property === IHOP_PROXY_TAG || propType === 'object' || propType === 'function') {
         return targetObj[property];
       }
       // The engine checks if the proxy is thenable and this results in
@@ -115,6 +120,7 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
 
     setPrototypeOf() {
       // Throw?
+      return false;
     },
   };
 }

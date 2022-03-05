@@ -20,7 +20,6 @@ export default class View extends EventEmitter {
 
   levelToView_(srcNode, dstNode, path) {
     const srcKeys = Object.keys(srcNode);
-    const dstKeys = Object.keys(dstNode);
 
     srcKeys.forEach((key) => {
       const src = srcNode[key];
