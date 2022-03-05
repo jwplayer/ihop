@@ -33,23 +33,14 @@ export default class Router extends EventEmitter {
   }
 
   route(message) {
-    const { destination, source, type, from, promiseId } = message;
+    const { destination, type } = message;
 
     if (process.env.NODE_ENV === 'dev') {
-      const at = this.name;
-
-      if (at !== from) {
-        let srcDest = '';
-
-        if (source && destination) {
-          srcDest = `\t[${source} ⟹ ${destination}]`;
-        }
-        console.debug(`${type}:\t${from} ⟶ ${at}${srcDest}`, message);
-      }
+      this.logMessage_(message);
     }
 
     if (typeof destination === 'undefined' || this.isDestinationSelf_(destination)) {
-      this.emit(message.type, message);
+      this.emit(type, message);
     } else if (this.isDestinationChildOrSelf_(destination)) {
       // Forward message to child
       const childName = this.getChildDestination_(destination);
@@ -63,6 +54,20 @@ export default class Router extends EventEmitter {
       message.from = this.name;
       // Forward message to parent
       this.network.toParent(message);
+    }
+  }
+
+  logMessage_ (message) {
+    const { destination, source, type, from } = message;
+    const at = this.name;
+
+    if (at !== from) {
+      let srcDest = '';
+
+      if (source && destination) {
+        srcDest = `\t[${source} ⟹ ${destination}]`;
+      }
+      console.debug(`${type}:\t${from} ⟶ ${at}${srcDest}`, message);
     }
   }
 
