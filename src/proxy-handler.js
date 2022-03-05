@@ -37,8 +37,22 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
       return promise;
     },
 
-    construct() {
+    construct(targetObj, args, newTarget) {
+      const [promiseId, promise] = promiseStore.makePromise();
+      const safeArgs = sanitizeArgs(args);
+
       // Throw?
+      router.route({
+        type: 'new',
+        targetName,
+        args: safeArgs,
+        destination,
+        from: router.name,
+        source: router.path,
+        promiseId,
+      });
+
+      return promise;
     },
 
     defineProperty() {

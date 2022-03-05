@@ -3,8 +3,26 @@ import isStructuredCloneable from './is-structured-cloneable';
 import ProxyHandler from './proxy-handler';
 import generatePath from './generate-path';
 import { IHOP_PROXY_TAG } from './constants';
+import getAllProperties from './get-all-properties';
 
 const noop = function() {};
+
+// List of properties that we do not create deep-proxies for
+const doNotDescend = [
+  // From Events
+  'currentTarget',
+  'path',
+  'srcElement',
+  'target',
+  'view',
+  // From DOM Element
+  'attributes',
+  'children',
+  'childNodes',
+  'offsetParent',
+  'ownerDocument',
+
+];
 
 export default class ProxySchema {
   constructor(router, promiseStore, retainedStore) {
@@ -68,12 +86,13 @@ export default class ProxySchema {
 
   deepToSchema_(srcNode, dstNode, parent = null, cycleTracker = []) {
     const srcKeys = Object.keys(srcNode);
+    const keys = getAllProperties(srcNode);
 
-    for (const key in srcNode) {
+    keys.forEach(key => {
       const src = srcNode[key];
 
-      if (cycleTracker.indexOf(src) > -1) {
-        continue;
+      if (cycleTracker.includes(src)) {
+        return;
       }
 
       if (typeof src === 'object' && src !== null) {
@@ -85,7 +104,7 @@ export default class ProxySchema {
 
         cycleTracker.push(src);
 
-        if (!isStructuredCloneable(src)) {
+        if (!isStructuredCloneable(src) && !doNotDescend.includes(key)) {
           dstNode[key]['@children'] = {};
           this.deepToSchema_(srcNode[key], dstNode[key]['@children'], src, cycleTracker);
         }
@@ -109,7 +128,7 @@ export default class ProxySchema {
       } else {
         // dstNode[key] = src;
       }
-    }
+    });
   }
 
   fromSchema(schema, path, needsFinalization = false) {

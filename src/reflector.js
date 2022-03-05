@@ -12,6 +12,7 @@ export default class Reflector {
     this.router.on('get', (message) => this.onGet(message));
     this.router.on('set', (message) => this.onSet(message));
     this.router.on('call', (message) => this.onCall(message));
+    this.router.on('new', (message) => this.onNew(message));
   }
 
   makeArgs_(args, source) {
@@ -88,6 +89,30 @@ export default class Reflector {
       // send schema as value
 
       this.doReturn(message, value);
+    } catch (error) {
+      this.doReturn(message, undefined, error);
+    }
+  }
+
+  async onNew(message) {
+    const {targetName, args, source } = message;
+    const newArgs = this.makeArgs_(args, source);
+
+    try {
+      const target = this.retainedStore.get(targetName);
+
+      if (!target) {
+        // Should probably return an exception
+        return this.doReturn(message, undefined);
+      }
+
+      const value = await Reflect.construct(target, newArgs);
+
+      // if value is complex (not cloneable):
+      // retain it and generate a proxy schema for it
+      // send schema as value
+
+      this.doReturn(message, value, undefined, true);
     } catch (error) {
       this.doReturn(message, undefined, error);
     }

@@ -1,3 +1,5 @@
+import getAllProperties from './get-all-properties';
+
 const primitiveTypes = ['string', 'number', 'boolean', 'bigint', 'undefined'];
 const objectTypes = [
   '[object String]',
@@ -28,8 +30,17 @@ const isStructuredCloneable = (o) => {
 };
 
 const isStructuredCloneable2 = (o) => {
+  let k;
   try {
     structuredClone(o);
+
+    if (typeof o === 'object') {
+      const keys = getAllProperties(o);
+      keys.forEach(key => {
+        structuredClone(o[key]);
+      });
+    }
+
     return true;
   } catch(error) {
     return false;
