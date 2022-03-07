@@ -7,8 +7,10 @@ export default class Finalizer {
   }
 
   finalization(message) {
-    const { retainedId } = message;
-
-    this.retainedStore.delete(retainedId);
+    const { retainedIds } = message;
+    retainedIds.forEach((retainedId) => {
+      this.retainedStore.delete(retainedId);
+    });
+    console.log('final:', this.router.path, this.retainedStore.keyToObj.size)
   }
 }
