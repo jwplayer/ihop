@@ -32,7 +32,9 @@ const isStructuredCloneable = (o) => {
 const isStructuredCloneable2 = (o) => {
   let k;
   try {
-    structuredClone(o);
+    if (structuredClone(o)) {
+      return true;
+    }
 
     if (typeof o === 'object') {
       const keys = getAllProperties(o);

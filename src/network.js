@@ -3,6 +3,9 @@ import { nanoid } from 'nanoid';
 
 import sameOrigin from './same.js';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants.js';
+import { Packr } from 'msgpackr';
+
+let packr = new Packr();
 
 class Node {
   constructor(id, window, origin) {
@@ -82,9 +85,11 @@ export default class Network extends EventEmitter {
   }
 
   ihopMessage_(data) {
+    const encodedData = packr.pack(data);
+
     return {
       version: IHOP_VERSION,
-      data
+      data: encodedData
     };
   }
 
@@ -179,11 +184,10 @@ export default class Network extends EventEmitter {
     } else {
       sourceId = this.sourceToId_.get(source);
     }
-
-    const newMessage = Object.assign({}, data.data, {
+    const decodedData = packr.unpack(data.data);
+    const newMessage = Object.assign({}, decodedData, {
       nodeId: sourceId,
     });
-
 
     this.emit('message', newMessage);
   }

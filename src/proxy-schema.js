@@ -5,6 +5,8 @@ import ProxyHandler from './proxy-handler.js';
 import generatePath from './generate-path.js';
 import { IHOP_PROXY_TAG } from './constants.js';
 import getAllProperties from './get-all-properties.js';
+import SchemaNode from './proxy-schema-node.js';
+
 const noop = function() {};
 
 // List of properties that we do not create deep-proxies for
@@ -69,25 +71,20 @@ export default class ProxySchema {
     let schema;
 
     if (typeof obj === 'object') {
-      const retainedId = this.retain_(obj);
-      schema = {
-        '@type': '@object',
-        '@id': retainedId
-      };
-
       if (!isStructuredCloneable(obj)) {
-        schema['@children'] = {};
-        this.deepToSchema_(obj, schema['@children'], obj);
+        const retainedId = this.retain_(obj);
+        const children = {};
+        this.deepToSchema_(obj, children, obj);
+        schema = new SchemaNode('object', retainedId, children);
+      } else {
+        schema = new SchemaNode('value', null, obj);
       }
     } else if (typeof obj === 'function') {
       const retainedId = this.retain_(obj);
 
-      schema = {
-        '@type': '@function',
-        '@id': retainedId
-      };
+      schema = new SchemaNode('function', retainedId);
     } else {
-      schema = obj;
+      schema = new SchemaNode('value', null, obj);
     }
 
     return schema;
@@ -105,17 +102,17 @@ export default class ProxySchema {
       }
 
       if (typeof src === 'object' && src !== null) {
-        const retainedId = this.retain_(src);
-        dstNode[key] = {
-          '@type': '@object',
-          '@id': retainedId
-        };
-
         cycleTracker.push(src);
+        if (!doNotDescend.includes(key)) {
+          if (!isStructuredCloneable(src)) {
+            const retainedId = this.retain_(src);
+            const children = {};
 
-        if (!isStructuredCloneable(src) && !doNotDescend.includes(key)) {
-          dstNode[key]['@children'] = {};
-          this.deepToSchema_(srcNode[key], dstNode[key]['@children'], src, cycleTracker);
+            this.deepToSchema_(srcNode[key], children, src, cycleTracker);
+            dstNode[key] = new SchemaNode('object', retainedId, children);
+          } else {
+            dstNode[key] = new SchemaNode('value', null, src);
+          }
         }
       } else if (typeof src === 'function') {
         let fn = src;
@@ -130,12 +127,10 @@ export default class ProxySchema {
         }
         const retainedId = this.retain_(fn);
 
-        dstNode[key] = {
-          '@type': '@function',
-          '@id': retainedId
-        };
+        dstNode[key] = new SchemaNode('function', retainedId);
       } else {
-        // dstNode[key] = src;
+        // TODO: Necessary?
+        dstNode[key] = new SchemaNode('value', null, src);
       }
     });
   }
@@ -145,31 +140,33 @@ export default class ProxySchema {
 
     if(typeof schema === 'object') {
       if (this.isSchema(schema)) {
-        const type = schema['@type'];
+        const type = schema.type;
 
-        if (type === '@function') {
+        if (type === 'function') {
           obj = noop;
-        } else if (type === '@object') {
+        } else if (type === 'object') {
           obj = {};
+        } else if (type === 'value') {
+          return schema.value
         }
         obj[IHOP_PROXY_TAG] = schema;
 
-        if ('@children' in schema) {
-          this.deepFromSchema_(schema['@children'], obj, path, needsFinalization);
+        if (schema.value) {
+          this.deepFromSchema_(schema.value, obj, path, needsFinalization);
         }
         // it is import to descend into children first to buid the proxy-tree
         // from the bottom up
-        obj = new Proxy(obj, ProxyHandler(this.router, this.promiseStore, this, path, schema['@id']));
+        obj = new Proxy(obj, ProxyHandler(this.router, this.promiseStore, this, path, schema.id));
 
         if (needsFinalization) {
           this.finalizationRegistry.register(obj, {
             destination: path,
-            retainedId: schema['@id']
+            retainedId: schema.id
           });
         }
       } else {
         obj = {};
-        obj[IHOP_PROXY_TAG] = schema;
+        // obj[IHOP_PROXY_TAG] = schema;
 
         this.deepFromSchema_(schema, obj, generatePath(path, key), needsFinalization);
       }
@@ -188,27 +185,29 @@ export default class ProxySchema {
       const src = srcNode[key];
 
       if (typeof src === 'object') {
-        if ('@id' in src && '@type' in src) {
-          const type = src['@type'];
+        if (this.isSchema(src)) {
+          const type = src.type;
 
-          if (type === '@function') {
+          if (type === 'function') {
             dstNode[key] = noop;
-          } else if (type === '@object') {
+          } else if (type === 'object') {
             dstNode[key] = {};
+          } else if (type === 'value') {
+            return dstNode[key] = src.value;
           }
 
-          if ('@children' in src) {
-            this.deepFromSchema_(src['@children'], dstNode[key], path, needsFinalization);
+          if (src.value) {
+            this.deepFromSchema_(src.value, dstNode[key], path, needsFinalization);
           }
 
           // it is import to descend into children first to buid the proxy-tree
           // from the bottom up
-          dstNode[key] = new Proxy(dstNode[key], ProxyHandler(this.router, this.promiseStore, this, path, src['@id']));
+          dstNode[key] = new Proxy(dstNode[key], ProxyHandler(this.router, this.promiseStore, this, path, src.id));
 
           if (needsFinalization) {
             this.finalizationRegistry.register(dstNode[key], {
               destination: path,
-              retainedId: src['@id']
+              retainedId: src.id
             });
           }
         } else {
@@ -222,6 +221,6 @@ export default class ProxySchema {
   }
 
   isSchema(obj) {
-    return (obj !== null && typeof obj ==='object' && '@id' in obj && '@type' in obj);
+    return (obj instanceof SchemaNode);
   }
 }
