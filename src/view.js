@@ -1,7 +1,7 @@
-import ProxyHandler from './proxy-handler';
-import generatePath from './generate-path';
-
 import EventEmitter from 'eventemitter3';
+
+import ProxyHandler from './proxy-handler.js';
+import generatePath from './generate-path.js';
 
 export default class View extends EventEmitter {
   constructor(model, proxySchema) {
@@ -31,11 +31,7 @@ export default class View extends EventEmitter {
           dstNode[key] = {};
           this.levelToView_(src, dstNode[key], generatePath(path, key));
         }
-      } else {
-        dstNode[key] = src;
       }
     });
   }
-
 }
-

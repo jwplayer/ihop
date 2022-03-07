@@ -1,5 +1,6 @@
 import EventEmitter from 'eventemitter3';
-import generatePath from './generate-path';
+
+import generatePath from './generate-path.js';
 
 export default class Router extends EventEmitter {
   constructor(name, network) {
@@ -10,7 +11,7 @@ export default class Router extends EventEmitter {
     this.network = network;
     this.nodeMap_ = new Map(/* <path, nodeId> */);
 
-    this.network.on('message', this.onMessage_.bind(this));
+    this.network.on('message', (...args) => this.onMessage_(...args));
   }
 
   isDestinationChildOrSelf_(dest) {
@@ -23,18 +24,27 @@ export default class Router extends EventEmitter {
 
   getChildDestination_(destination) {
     const pathLen = this.path.length;
-    if (pathLen > 0) {
-      const subPath = destination.slice(pathLen + 1);
-      return subPath.split('.')[0];
-    }
+    const subPath = destination.slice(pathLen + 1);
 
-    // We are at the root node
-    return destination.split('.')[0];
+    return subPath.split('.')[0];
+  }
+
+  toParent (message) {
+    Object.assign(message, { from: this.name });
+
+    this.network.toParent(message);
+  }
+
+  toAllChildren(message) {
+    Object.assign(message, { from: this.name });
+
+    this.network.toAllChildren(message);
   }
 
   route(message) {
     const { destination, type } = message;
 
+    /* c8 ignore next 3 */
     if (process.env.NODE_ENV === 'dev') {
       this.logMessage_(message);
     }
@@ -57,6 +67,7 @@ export default class Router extends EventEmitter {
     }
   }
 
+  /* c8 ignore start */
   logMessage_ (message) {
     const { destination, source, type, from } = message;
     const at = this.name;
@@ -70,11 +81,12 @@ export default class Router extends EventEmitter {
       console.debug(`${type}:\t${from} ⟶ ${at}${srcDest}`, message);
     }
   }
+  /* c8 ignore stop */
 
   onMessage_(message) {
     // Listen for events that let us know topography
     // chiefly peek and poke
-    const { type, from, path, nodeId } = message;
+    const { from, path, nodeId } = message;
 
     if (typeof path === 'string') {
       const newPath = generatePath(path, this.name);

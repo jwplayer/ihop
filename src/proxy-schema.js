@@ -1,10 +1,10 @@
 import { nanoid } from 'nanoid';
-import isStructuredCloneable from './is-structured-cloneable';
-import ProxyHandler from './proxy-handler';
-import generatePath from './generate-path';
-import { IHOP_PROXY_TAG } from './constants';
-import getAllProperties from './get-all-properties';
 
+import isStructuredCloneable from './is-structured-cloneable.js';
+import ProxyHandler from './proxy-handler.js';
+import generatePath from './generate-path.js';
+import { IHOP_PROXY_TAG } from './constants.js';
+import getAllProperties from './get-all-properties.js';
 const noop = function() {};
 
 // List of properties that we do not create deep-proxies for
@@ -17,11 +17,20 @@ const doNotDescend = [
   'view',
   // From DOM Element
   'attributes',
+  'firstChild',
+  'firstElementChild',
   'children',
   'childNodes',
+  'nextElementSibling',
+  'nextSibling',
+  'lastChild',
+  'lastElementChild',
   'offsetParent',
+  'parentElement',
+  'parentNode',
+  'previousElementSibling',
+  'previousSibling',
   'ownerDocument',
-
 ];
 
 export default class ProxySchema {

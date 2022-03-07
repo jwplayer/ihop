@@ -1,14 +1,8 @@
-import sameOrigin from './same';
 import EventEmitter from 'eventemitter3';
 import { nanoid } from 'nanoid';
-import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants';
-import global from 'global';
 
-const defaultOptions = {
-  parentOrigin: '*',
-  parentWindow: (global && global.parent !== global) ? global.parent : null,
-  allowedOrigins: [],
-};
+import sameOrigin from './same.js';
+import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants.js';
 
 class Node {
   constructor(id, window, origin) {
@@ -35,36 +29,55 @@ class WorkerNode extends Node {
 }
 
 /**
- * Iframe Hopper Base - contains the functionality related to maintaining a
- * globally consistent state between iframes.
+ * Network - security for cross-origin message passing
  */
 export default class Network extends EventEmitter {
-  constructor(options = {}) {
+  constructor(global, options = {}) {
     super();
-    const finalOptions = Object.assign({}, defaultOptions, options);
-
+    this.global = global;
     this.nodes_ = new Map(/* <uuid, Node> */);
     this.sourceToId_ = new WeakMap(/* <window, uuid> */);
-    this.allowedOrigins_ = finalOptions.allowedOrigins.slice();
-    if (finalOptions.parentOrigin !== '*') {
-      this.allowedOrigins_.push(finalOptions.parentOrigin);
-    }
+
+    this.buildOptions_(options);
+    this.setupAllowedOrigins_();
+    this.setupParentNode_();
 
     // Setup message pump
-    global.addEventListener('message', (...args) => this.onMessage(...args));
+    this.global.addEventListener('message', (...args) => this.onMessage(...args));
+  }
 
-    if (finalOptions.parentWindow) {
+  buildOptions_(options) {
+    const isWindowRoot = (!this.global || this.global.parent === this.global);
+
+    this.options = Object.assign({}, {
+      parentOrigin: '*',
+      parentWindow: isWindowRoot ? null : this.global.parent,
+      allowedOrigins: [],
+    }, options);
+  }
+
+  setupAllowedOrigins_() {
+    this.allowedOrigins_ = this.options.allowedOrigins.slice();
+
+    if (this.options.parentOrigin !== '*') {
+      this.allowedOrigins_.push(this.options.parentOrigin);
+    }
+  }
+
+  setupParentNode_(){
+    if (this.options.parentWindow) {
       this.parentId_ = nanoid();
 
       let parentNode;
 
-      if (global['WorkerGlobalScope'] && global instanceof WorkerGlobalScope) {
-        parentNode = new WorkerNode(this.parentId_, finalOptions.parentWindow, finalOptions.parentOrigin);
+      if (this.global['WorkerGlobalScope'] && this.global instanceof this.global['WorkerGlobalScope']) {
+        parentNode = new WorkerNode(this.parentId_, this.options.parentWindow, this.options.parentOrigin);
       } else {
-        parentNode = new Node(this.parentId_, finalOptions.parentWindow, finalOptions.parentOrigin);
+        parentNode = new Node(this.parentId_, this.options.parentWindow, this.options.parentOrigin);
       }
+
       this.nodes_.set(this.parentId_, parentNode);
-      this.sourceToId_.set(finalOptions.parentWindow, this.parentId_);
+      this.sourceToId_.set(this.options.parentWindow, this.parentId_);
     }
   }
 
@@ -157,7 +170,7 @@ export default class Network extends EventEmitter {
     let sourceId;
 
     // Register this node if we have never seen it before...
-    if (source !== global && !this.sourceToId_.has(source)) {
+    if (source !== this.global && !this.sourceToId_.has(source)) {
       sourceId = nanoid();
       const node = new Node(sourceId, source, origin);
 

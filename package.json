@@ -2,16 +2,17 @@
   "name": "ihop",
   "version": "1.0.0",
   "description": "Share objects between iframes and use them as though they are completely local!",
-  "main": "src/ihop.js",
+  "main": "src/index.js",
   "directories": {
-    "test": "tests"
+    "test": "test"
   },
   "type": "module",
   "scripts": {
     "build": "npm-run-all -p build:*",
     "build:dev": "rollup -c rollup.config.dev.js",
     "build:prod": "rollup -c rollup.config.prod.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "c8 qunit",
+    "test:watch": "qunit --watch",
     "watch": "rollup -c rollup.config.dev.js -w"
   },
   "author": "Jon-Carlos Rivera",
@@ -24,10 +25,19 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.1.3",
+    "c8": "^7.11.0",
     "npm-run-all": "^4.1.5",
+    "qunit": "^2.18.0",
     "rollup": "^2.67.3",
     "rollup-plugin-inject-process-env": "^1.3.1",
     "rollup-plugin-polyfill-node": "^0.8.0",
-    "rollup-plugin-uglify": "^6.0.4"
+    "rollup-plugin-uglify": "^6.0.4",
+    "sinon": "^13.0.1"
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "html"
+    ]
   }
 }

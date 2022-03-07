@@ -1,4 +1,4 @@
-import { IHOP_PROXY_TAG } from './constants';
+import { IHOP_PROXY_TAG } from './constants.js';
 
 export default class Completer {
   constructor(router, promiseStore, proxySchema) {
@@ -15,13 +15,17 @@ export default class Completer {
 
     // if value is a complex retained obj proxy schema:
     // reconstruct the proxy
-    // start a finalization listener on any proxies created
-    if (this.proxySchema.isSchema(value)) {
-      // Finalization needs to be tracked so the references can be
-      // deleted at the "source" node
-      value = this.proxySchema.fromSchema(value, source, true);
-    } else if (value && value[IHOP_PROXY_TAG]) {
-      value = value[IHOP_PROXY_TAG];
+    if (value) {
+      if (this.proxySchema.isSchema(value)) {
+        // Finalization needs to be tracked so the references can be
+        // deleted at the "source" node
+        value = this.proxySchema.fromSchema(value, source, true);
+      } else if (value[IHOP_PROXY_TAG]) {
+        // If we are already dealing with a proxy, send the proxy
+        // schema instead of the proxy itself
+        // TODO: Explain this!
+        value = value[IHOP_PROXY_TAG];
+      }
     }
 
     if (typeof error === 'undefined') {

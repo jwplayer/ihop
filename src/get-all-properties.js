@@ -1,6 +1,7 @@
 const exclude = [
   '__proto__',
   'prototype',
+  'constructor',
 ];
 
 const getAllProperties = (obj) => {
@@ -12,7 +13,7 @@ const getAllProperties = (obj) => {
       if (exclude.includes(key)) {
         continue;
       }
-      if (!res.includes(key) && key !== 'constructor') {
+      if (!res.includes(key)) {
         res.push(key);
       }
     }

@@ -1,15 +1,16 @@
-import Model from './model';
-import Router from './router';
-import Network from './network';
-import View from './view';
-import PromiseStore from './promise-store';
-import Completer from './completer';
-import Finalizer from './finalizer';
-import Reflector from './reflector';
-import RetainedStore from './retained-store';
-import ProxySchema from './proxy-schema';
-
+import global from 'global';
 import EventEmitter from 'eventemitter3';
+
+import Model from './model.js';
+import Router from './router.js';
+import Network from './network.js';
+import View from './view.js';
+import PromiseStore from './promise-store.js';
+import Completer from './completer.js';
+import Finalizer from './finalizer.js';
+import Reflector from './reflector.js';
+import RetainedStore from './retained-store.js';
+import ProxySchema from './proxy-schema.js';
 
 export default class IHop extends EventEmitter {
   constructor(name, options) {
@@ -17,7 +18,7 @@ export default class IHop extends EventEmitter {
     this.name = name;
 
     // General Support
-    this.network = new Network(options?.network);
+    this.network = new Network(global, options?.network);
 
     // Promise store holds promises that are waiting to be "completed"
     this.promiseStore = new PromiseStore();

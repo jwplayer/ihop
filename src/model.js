@@ -1,7 +1,8 @@
-import isStructuredCloneable from './is-structured-cloneable';
 import { nanoid } from 'nanoid';
 import EventEmitter from 'eventemitter3';
 import global from 'global';
+
+import isStructuredCloneable from './is-structured-cloneable.js';
 
 const defaultOptions = {
   forceRoot: false,
@@ -36,8 +37,8 @@ export default class Model extends EventEmitter {
       this.registerWithParent_();
     }
 
-    this.router.on('peek', this.onPeek.bind(this));
-    this.router.on('poke', this.onPoke.bind(this));
+    this.router.on('peek', (...args) => this.onPeek(...args));
+    this.router.on('poke', (...args) => this.onPoke(...args));
   }
 
   export(name, value) {
@@ -64,10 +65,9 @@ export default class Model extends EventEmitter {
   }
 
   peekState_() {
-    this.router.network.toParent({
+    this.router.toParent({
       type: 'peek',
       version: this.localTreeVersion_,
-      from: this.router.name,
       state: this.localTree_
     });
   }
@@ -75,10 +75,9 @@ export default class Model extends EventEmitter {
   pokeState_() {
     this.emit('changed', this.globalTree_);
 
-    this.router.network.toAllChildren({
+    this.router.toAllChildren({
       type: 'poke',
       path: this.router.path,
-      from: this.router.name,
       version: this.globalTreeVersion_,
       state: this.globalTree_
     });

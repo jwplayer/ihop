@@ -1,5 +1,5 @@
-import isStructuredCloneable from './is-structured-cloneable';
-import { IHOP_PROXY_TAG } from './constants';
+import isStructuredCloneable from './is-structured-cloneable.js';
+import { IHOP_PROXY_TAG } from './constants.js';
 
 const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName) => {
   const sanitizeArgs = (args) => {

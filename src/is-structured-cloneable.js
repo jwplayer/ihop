@@ -1,4 +1,4 @@
-import getAllProperties from './get-all-properties';
+import getAllProperties from './get-all-properties.js';
 
 const primitiveTypes = ['string', 'number', 'boolean', 'bigint', 'undefined'];
 const objectTypes = [

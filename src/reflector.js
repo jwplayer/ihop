@@ -1,5 +1,5 @@
-import ProxyHandler from './proxy-handler';
-import isStructuredCloneable from './is-structured-cloneable';
+import ProxyHandler from './proxy-handler.js';
+import isStructuredCloneable from './is-structured-cloneable.js';
 
 const noop = () => {};
 
@@ -16,15 +16,13 @@ export default class Reflector {
   }
 
   makeArgs_(args, source) {
-    // if any arguments are functions - ie. callbacks:
-    // 1) get the remote function id
-    // 2) generate proxy function that calls to that id
-    // 3) replace parameter with proxy
+    // Arguments can be either a value or a ProxySchema
     return args.map((arg) => {
       if (!this.proxySchema.isSchema(arg)){
         return arg;
       }
 
+      // If the argument is a ProxySchema then generate a proxy
       // Finalization needs to be tracked so the references can be
       // deleted at the "source" node
       const proxy = this.proxySchema.fromSchema(arg, source, true);
