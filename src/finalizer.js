@@ -8,9 +8,13 @@ export default class Finalizer {
 
   finalization(message) {
     const { retainedIds } = message;
+    const originalSize = this.retainedStore.keyToObj.size;
     retainedIds.forEach((retainedId) => {
       this.retainedStore.delete(retainedId);
     });
-    console.log('final:', this.router.path, this.retainedStore.keyToObj.size)
+
+    if (process.env.NODE_ENV === 'dev') {
+      console.debug('final:', this.router.path, '\tRetained size:', originalSize, '⟶', this.retainedStore.keyToObj.size);
+    }
   }
 }
