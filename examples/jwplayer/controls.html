@@ -32,29 +32,7 @@
   }
   const ihop = new IHop('controls', options);
 
-  // This jwplayer is in iframe "jwplayer"
-  ihop.waitFor('main.jwplayer.player').then(async (JWPLAYER) => {
-    console.debug('Found jwplayer...');
-
-    const currTimeProg = document.querySelector('#progress');
-
-    JWPLAYER.setMute(true);
-
-    document.querySelector('#play').addEventListener('click', () => JWPLAYER.play());
-    document.querySelector('#pause').addEventListener('click', () => JWPLAYER.pause());
-
-    JWPLAYER.on('time', (message) => {
-      const currentTime = message.position;
-      const duration = message.duration;
-
-      currTimeProg.value = currentTime / duration;
-    });
-
-    currTimeProg.addEventListener('click', async (e) => {
-      const ratio = e.offsetX / currTimeProg.offsetWidth;
-      const duration = await JWPLAYER.getDuration();
-      const seekToTime = duration * ratio;
-      JWPLAYER.seek(seekToTime);
-    });
-  });
+  ihop.export('playButton', document.querySelector('#play'));
+  ihop.export('pauseButton', document.querySelector('#pause'));
+  ihop.export('progressBar', document.querySelector('#progress'));
 </script>

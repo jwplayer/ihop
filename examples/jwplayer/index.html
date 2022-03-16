@@ -33,6 +33,30 @@ iframe {
     options.network.allowedOrigins = [ 'http://127.0.0.1:8080/' ];
   }
   const ihop = new IHop('main', options);
+
+  Promise.all([
+    ihop.waitFor('main.jwplayer.player'),
+    ihop.waitFor('main.controls.playButton'),
+    ihop.waitFor('main.controls.pauseButton'),
+    ihop.waitFor('main.controls.progressBar'),
+  ]).then(async ([JWPLAYER, play, pause, progress]) => {
+    play.addEventListener('click', JWPLAYER.play);
+    pause.addEventListener('click', JWPLAYER.pause);
+
+    JWPLAYER.on('time', (message) => {
+      const currentTime = message.position;
+      const duration = message.duration;
+
+      progress.value = currentTime / duration;
+    });
+
+    progress.addEventListener('click', async (e) => {
+      const ratio = await e.offsetX / await progress.offsetWidth;
+      const duration = await JWPLAYER.getDuration();
+      const seekToTime = duration * ratio;
+      JWPLAYER.seek(seekToTime);
+    });
+  });
 </script>
 
 
