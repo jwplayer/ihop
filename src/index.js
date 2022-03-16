@@ -11,6 +11,7 @@ import Finalizer from './finalizer.js';
 import Reflector from './reflector.js';
 import RetainedStore from './retained-store.js';
 import ProxySchema from './proxy-schema.js';
+import networkDefaults from './network-defaults.js';
 
 export default class IHop extends EventEmitter {
   constructor(name, options) {
@@ -18,7 +19,7 @@ export default class IHop extends EventEmitter {
     this.name = name;
 
     // General Support
-    this.network = new Network(global, options?.network);
+    this.network = new Network(global, Object.assign({}, networkDefaults, options?.network ?? {}));
 
     // Promise store holds promises that are waiting to be "completed"
     this.promiseStore = new PromiseStore();

@@ -1,5 +1,3 @@
-import { addExtension } from 'msgpackr';
-
 const schemaType = [
   'object',
   'function',
@@ -52,15 +50,3 @@ export default class SchemaNode {
     return new SchemaNode(type, arr[1], arr[2]);
   }
 }
-
-// Type-extension for msgpackr to (de/en)code SchemaNodes
-addExtension({
-  Class: SchemaNode,
-  type: 80,
-  write(instance) {
-    return SchemaNode.toPacked(instance); // return some data to be encoded
-  },
-  read(data) {
-    return SchemaNode.fromPacked(data); // return decoded value
-  }
-});

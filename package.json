@@ -20,7 +20,6 @@
   "dependencies": {
     "eventemitter3": "^4.0.7",
     "global": "^4.4.0",
-    "msgpackr": "^1.5.4",
     "nanoid": "^3.3.1"
   },
   "devDependencies": {

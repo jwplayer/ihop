@@ -1,11 +1,9 @@
 import EventEmitter from 'eventemitter3';
 import { nanoid } from 'nanoid';
-
+import SchemaNode from './proxy-schema-node.js';
 import sameOrigin from './same.js';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants.js';
-import { Packr } from 'msgpackr';
 
-let packr = new Packr();
 
 class Node {
   constructor(id, window, origin) {
@@ -52,6 +50,8 @@ export default class Network extends EventEmitter {
   buildOptions_(options) {
     const isWindowRoot = (!this.global || this.global.parent === this.global);
 
+    this.codec_ = options.codec;
+
     this.options = Object.assign({}, {
       parentOrigin: '*',
       parentWindow: isWindowRoot ? null : this.global.parent,
@@ -85,7 +85,11 @@ export default class Network extends EventEmitter {
   }
 
   ihopMessage_(data) {
-    const encodedData = packr.pack(data);
+    let encodedData = data;
+
+    if (this.codec_?.encode && this.codec_?.decode) {
+      encodedData = this.codec_.encode(data);
+    }
 
     return {
       version: IHOP_VERSION,
@@ -108,6 +112,7 @@ export default class Network extends EventEmitter {
     const node = this.nodes_.get(nodeId);
 
     if (node) {
+      this.emit('send');
       this.nodes_.get(nodeId).send(ihopMessage);
     }
   }
@@ -123,6 +128,7 @@ export default class Network extends EventEmitter {
       if (nodeId !== this.parentId_) {
         const node = this.nodes_.get(nodeId);
         if (node) {
+          this.emit('send');
           node.send(ihopMessage);
         }
       }
@@ -172,6 +178,7 @@ export default class Network extends EventEmitter {
       console.warn('Received a message from a different IHop version', version, 'expecting', IHOP_VERSION);
     }
 
+    this.emit('receive');
     let sourceId;
 
     // Register this node if we have never seen it before...
@@ -184,7 +191,12 @@ export default class Network extends EventEmitter {
     } else {
       sourceId = this.sourceToId_.get(source);
     }
-    const decodedData = packr.unpack(data.data);
+
+    let decodedData = data.data;
+    if (this.codec_?.encode && this.codec_?.decode) {
+      decodedData = this.codec_.decode(data.data);
+    }
+
     const newMessage = Object.assign({}, decodedData, {
       nodeId: sourceId,
     });
