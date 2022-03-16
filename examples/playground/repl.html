@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<title></title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
+  * {
+    font-family: 'Fira Code', monospace;
+    box-sizing: border-box;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-kerning: auto;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    height: 100vh;
+    padding: 15px;
+    border: 1px solid black;
+    background-color: #eee;
+  }
+  textarea {
+    margin: 0;
+    width: 100%;
+    border: 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 12pt;
+    line-height: 1.5;
+    padding: 1em;
+  }
+  #html {
+    background: #fef;
+  }
+  #css {
+    background: #eff;
+  }
+  #js {
+    background: #ffe;
+  }
+  iframe {
+    border: none;
+  }
+  #share {
+    background: rgba(255,255,255,.3);
+    color: black;
+    position: fixed;
+    bottom: .5em;
+    right: .5em;
+    padding: .5em;
+    line-height: 1;
+    border: 1px solid rgba(0,0,0,.5);
+    z-index: 500;
+    text-decoration: none;
+    opacity: .7;
+    border-radius: .2em;
+    transition: opacity .2s ease-in-out;
+  }
+  #share:hover,
+  #share:focus {
+    opacity: 1;
+  }
+  .fcont {
+    height: calc(100vh - 94px);
+    display: flex;
+    flex-direction: column;
+  }
+  .fcont>iframe {
+    flex-grow: 1;
+  }
+  #refresh {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 25px;
+    font-weight: 800;
+  }
+  .text-cont {
+    position: relative;
+  }
+  .text-label {
+    position: absolute;
+    right: 5px;
+    color: darkgrey;
+    font-weight: bold;
+    pointer-events: none;
+  }
+</style>
+<body>
+<style>
+  #modem-lights-container {
+    display: flex;
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+  #modem-lights {
+    display: flex;
+    height: 40px;
+    margin: 15px;
+    margin-left: 5px;
+  }
+  .indicator {
+    margin: 2px;
+  }
+  .light {
+    background-image: radial-gradient(circle at top 45% left 65%, darkred, black);
+    background-clip: text
+    text-fill-color: transparent;
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -moz-text-fill-color: transparent;
+    padding-left: 20%;
+    font-size: 18px;
+  }
+  .mini {
+    font-size: 10px;
+  }
+  .name {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    height: 40px;
+    font-size: 1.5em;
+    font-weight: bold;
+  }
+</style>
+<div id="modem-lights-container">
+  <div id="modem-lights">
+    <div class="indicator"><span class="light" id="connected">⬤</span><br><span class="mini">conn</span></div>
+    <div class="indicator"><span class="light" id="send">⬤</span><br><span class="mini">send</span></div>
+    <div class="indicator"><span class="light" id="receive">⬤</span><br><span class="mini">recv</span></div>
+  </div>
+  <span class="name" id="name"></span>
+</div>
+<script>
+  const el = document.querySelector('#name');
+  el.innerHTML = `Window "${window.name}-parent"`;
+</script>
+<div class="fcont">
+<div class="text-cont">
+  <span class="text-label">CSS</span>
+  <textarea
+    id="css"
+    accesskey="c"
+    placeholder="CSS"
+    autocapitalize="off"
+    autocorrect="off"
+    spellcheck="false"
+  ></textarea>
+</div>
+
+<div class="text-cont">
+  <span class="text-label">HTML</span>
+  <textarea
+    id="html"
+    accesskey="h"
+    placeholder="HTML"
+    autocapitalize="off"
+    autocorrect="off"
+    spellcheck="false"
+  ></textarea>
+</div>
+
+<div class="text-cont">
+  <span class="text-label">JavaScript</span>
+  <textarea
+    id="js"
+    accesskey="j"
+    placeholder="JavaScript"
+    autocapitalize="off"
+    autocorrect="off"
+    spellcheck="false"
+  ></textarea>
+</div>
+<button id="refresh" onclick="preview()">Run⏵︎</button>
+<iframe></iframe>
+</div>
+<script>
+  const html = document.querySelector('#html');
+  const css = document.querySelector('#css');
+  const js = document.querySelector('#js');
+  const iframe = document.querySelector('iframe');
+  const name = window.name;
+  const lsGet = (prop) => {
+    return localStorage[`${name}-${prop}`];
+  };
+  const lsSet = (prop, value) => {
+    return localStorage[`${name}-${prop}`] = value;
+  };
+
+  window.addEventListener('load', event => {
+    if (window.name === 'left') {
+      html.value = lsGet('html') ?? `<div id="output"></div>`;
+      css.value = lsGet('css') ?? `#output {
+  background-color: black;
+  color: white;
+}`;
+      js.value = lsGet('js') ?? `const out = document.querySelector('#output');
+
+ihop.waitFor('main.right-parent.right.foo').then(async (foo) => {
+  const handler = async (e) => {
+    const el = await e.target;
+    out.innerHTML += await el.innerText + '<br>';
+  };
+  foo.addEventListener('click', handler);
+});`;
+    } else {
+      html.value = lsGet('html') ?? '<button id="foo">Click!</button>';
+      css.value = lsGet('css') ?? 'button { font-size: 18px; }';
+      js.value = lsGet('js') ?? `const foo = document.querySelector('#foo');
+
+ihop.export('foo', foo);`;
+    }
+
+    autoHeight(html);
+    autoHeight(css);
+    autoHeight(js);
+    preview();
+  });
+
+  const indentLines = (buffer, start, end) => {
+    const lines = buffer.split('\n');
+    let startCursor = start;
+    let endCursor = end;
+
+    // Get all lines that are selected
+    const selected = lines.filter((line, i) => {
+      startCursor -= line.length + 1;
+
+      if (endCursor <= 0) {
+        return false;
+      }
+
+      endCursor -= line.length + 1;
+
+      if (startCursor < 0) {
+        return true;
+      }
+
+      return false;
+    });
+    startCursor = start;
+    endCursor = end;
+
+    const before = lines.filter((line, i) => {
+      startCursor -= line.length + 1;
+
+      if (startCursor < 0) {
+        return false;
+      }
+
+      return true;
+    });
+
+    const after = lines.filter((line, i) => {
+      if (endCursor <= 0) {
+        return true;
+      }
+      endCursor -= line.length + 1;
+
+      return false;
+    });
+    const indented = selected.map((line) => {
+      return '  ' + line;
+    });
+
+    return [[...before, ...indented, ...after].join('\n'), indented.length * 2];
+  };
+
+  [html, css, js].forEach((tag) => {
+    tag.addEventListener('input', (event) => {
+      lsSet(tag.id, tag.value);
+      autoHeight(tag);
+    });
+    tag.addEventListener('keydown', (event) => {
+      const charCode = event[
+        typeof event.which == 'number'
+          ? 'which'
+          : 'keyCode'
+      ];
+      const active = event.target;
+      const start = active.selectionStart;
+      const end = active.selectionEnd;
+      const buffer = active.value;
+
+      if (charCode === 9) {
+        // Tab key adds 2 spaces
+        event.preventDefault();
+        if (start !== end) {
+          const [indented, count] = indentLines(buffer, start, end);
+
+          spacesAdded = count;
+          active.value = indented;
+          active.setSelectionRange(start, end + count);
+        } else {
+          active.value = buffer.slice(0, start)
+            + '  '
+            + buffer.slice(start);
+
+          active.setSelectionRange(start + 2, end + 2);
+        }
+      } else if (charCode === 13) {
+        // Match the indent on the new line to the previous line
+        const preString = buffer.substring(0, start);
+        const matches = preString.match(/\n(\s*).*$/);
+        const lineStart = matches ? matches[1] || '' : '';
+        const newCursor = start + 1 + lineStart.length;
+        event.preventDefault();
+        active.value = buffer.slice(0, start)
+          + '\n' + lineStart
+          + buffer.slice(end);
+
+        return active.setSelectionRange(newCursor, newCursor);
+      }
+    });
+  });
+
+  window.preview = () => {
+    return iframe.srcdoc = `
+      <style>${css.value}</style>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
+        * {
+          font-family: 'Fira Code', 'Segoe UI Symbol', monospace;
+        }
+        html {
+          height: 100vh;
+        }
+        body {
+          padding: 10px;
+          margin: 0;
+          border: 1px solid black;
+          height: calc(100vh - 22px);
+          width: calc(100vw - 22px);
+          background-color: #fff;
+        }
+        h1 {
+          margin-top: 5px;
+          margin-bottom: 5px;
+          height: 20px;
+        }
+      <\/style>
+      <script src="https://cdn.jsdelivr.net/npm/msgpackr@1.5.4/dist/index.js"><\/script>
+      <script src="../../dist/ihop.js"><\/script>
+      <body>
+      <style>
+        #modem-lights-container {
+          display: flex;
+          margin-left: 2px;
+          margin-right: 2px;
+        }
+        #modem-lights {
+          display: flex;
+          height: 40px;
+          margin: 15px;
+          margin-left: 5px;
+       }
+        .indicator {
+          margin: 2px;
+        }
+        .light {
+          background-image: radial-gradient(circle at top 45% left 65%, darkred, black);
+          background-clip: text
+          text-fill-color: transparent;
+          -webkit-background-clip: text;
+          -moz-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          -moz-text-fill-color: transparent;
+          padding-left: 20%;
+          font-size: 18px;
+        }
+        .mini {
+          font-size: 10px;
+        }
+        .name {
+          margin-top: 15px;
+          margin-bottom: 15px;
+          height: 40px;
+          font-size: 1.5em;
+          font-weight: bold;
+        }
+      </style>
+      <div id="modem-lights-container">
+        <div id="modem-lights">
+          <div class="indicator"><span class="light" id="connected">⬤</span><br><span class="mini">conn</span></div>
+          <div class="indicator"><span class="light" id="send">⬤</span><br><span class="mini">send</span></div>
+          <div class="indicator"><span class="light" id="receive">⬤</span><br><span class="mini">recv</span></div>
+        </div>
+        <span class="name" id="name"></span>
+      </div>
+      <script>
+        const el = document.querySelector('#name');
+        el.innerHTML = 'Window "${window.name}"';
+      <\/script>
+      <script>
+        const ihop = new IHop('${name}');
+        const connIndicator = document.querySelector('#connected');
+        const sendIndicator = document.querySelector('#send');
+        const receiveIndicator = document.querySelector('#receive');
+
+        if (localStorage['${name}-version'] && !isNaN(localStorage['${name}-version'])) {
+          ihop.model.localTreeVersion_ = Number(localStorage['${name}-version']) + 1;
+        }
+
+        ihop.model.on('changed', () => {
+          if (ihop.model.isRoot) {
+            connIndicator.style = 'background-image:radial-gradient(circle at top 45% left 65%, orange, red);';
+          } else {
+            connIndicator.style = 'background-image:radial-gradient(circle at top 45% left 65%, red, darkred);';
+          }
+
+          localStorage['${name}-version'] = ihop.model.localTreeVersion_;
+        });
+
+        const blink = (el, newColor, oldColor) => {
+          const blinkTime = ihop.network.slow ? 500 : 100;
+          el.style = 'background-image: ' + newColor + ';';
+          setTimeout(()=> { el.style = 'background-image: ' + oldColor + ';'; }, blinkTime);
+        };
+
+        ihop.network.on('send', () => blink(sendIndicator, 'radial-gradient(circle at top 45% left 65%, orangered, darkred)', 'radial-gradient(circle at top 45% left 65%, darkred, black)'));
+        ihop.network.on('receive', () => blink(receiveIndicator, 'radial-gradient(circle at top 45% left 65%, orangered, darkred)', 'radial-gradient(circle at top 45% left 65%, darkred, black)'));
+
+        ihop.waitFor('main.slow').then((slow) => {
+          slow.addEventListener('click', async () => ihop.network.slow = await slow.checked);
+        });
+      <\/script>
+      ${html.value}
+      <script type=module>${js.value}<\/script>
+    `
+  }
+
+  function autoHeight(tag) {
+    tag.style.height = 'auto'
+
+    return tag.style.height = getComputedStyle(tag).getPropertyValue('borderTop')
+      + getComputedStyle(tag).getPropertyValue('paddingTop')
+      + tag.scrollHeight
+      + getComputedStyle(tag).getPropertyValue('paddingBottom')
+      + getComputedStyle(tag).getPropertyValue('borderBottom')
+      + 'px';
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/msgpackr@1.5.4/dist/index.js"></script>
+<script src="../../dist/ihop.js"></script>
+<script>
+  let parentOrigin = 'https://jrivera-projects.s3.amazonaws.com';
+  if (window.location.origin === 'http://127.0.0.1:8080') {
+    parentOrigin = window.location.origin;
+  }
+  const ihop = new IHop(`${window.name}-parent`, {
+    network: {
+      parentOrigin,
+      allowedOrigins: [
+        'https://transmuxer-output.s3.amazonaws.com',
+        'https://jrivera-alternate.s3.amazonaws.com',
+        'http://127.0.0.1:8080',
+      ]
+    }
+  });
+  const connIndicator = document.querySelector('#connected');
+  const sendIndicator = document.querySelector('#send');
+  const receiveIndicator = document.querySelector('#receive');
+
+  ihop.model.on('changed', () => {
+    if (ihop.model.isRoot) {
+      connIndicator.style = 'background-image:radial-gradient(circle at top 45% left 65%, orange, red);';
+    } else {
+      connIndicator.style = 'background-image:radial-gradient(circle at top 45% left 65%, red, darkred);';
+    }
+  });
+
+  const blink = (el, newColor, oldColor) => {
+    const blinkTime = ihop.network.slow ? 500 : 100;
+    el.style = `background-image: ${newColor};`;
+    setTimeout(()=> { el.style = `background-image: ${oldColor};`; }, blinkTime);
+  };
+
+  ihop.network.on('send', () => blink(sendIndicator, 'radial-gradient(circle at top 45% left 65%, orangered, darkred)', 'radial-gradient(circle at top 45% left 65%, darkred, black)'));
+  ihop.network.on('receive', () => blink(receiveIndicator, 'radial-gradient(circle at top 45% left 65%, orangered, darkred)', 'radial-gradient(circle at top 45% left 65%, darkred, black)'));
+
+  ihop.export('refresh', document.querySelector('#refresh'));
+  ihop.export('preview', window.preview);
+
+  // Holy smokes! The playground app actually uses IHop too!
+  ihop.waitFor('main.slow').then((slow) => {
+    slow.addEventListener('click', async () => ihop.network.slow = await slow.checked);
+  });
+</script>

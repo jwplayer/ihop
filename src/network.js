@@ -4,6 +4,7 @@ import SchemaNode from './proxy-schema-node.js';
 import sameOrigin from './same.js';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants.js';
 
+const delay = (time) => new Promise((accept) => setTimeout(accept, time));
 
 class Node {
   constructor(id, window, origin) {
@@ -144,7 +145,7 @@ export default class Network extends EventEmitter {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onMessage(message) {
+  async onMessage(message) {
     const { origin, srcElement, data } = message;
     let { source } = message;
     const { allowedOrigins } = this.options_;
@@ -179,6 +180,11 @@ export default class Network extends EventEmitter {
     }
 
     this.emit('receive');
+
+    if (this.slow) {
+      await delay(400);
+    }
+
     let sourceId;
 
     // Register this node if we have never seen it before...
