@@ -32,7 +32,7 @@ export default class IHop extends EventEmitter {
     // More routing of messages based on name and node path
     this.router = new Router(this.name, this.network);
 
-    // Finalization Registry with caching
+    // Finalization Registry with remote messaging and caching
     this.finalizationRegistry = new RemoteFinalizationRegistry(this.router);
 
     // Heavy lifting for proxy creation and obj-to-proxy
@@ -58,40 +58,49 @@ export default class IHop extends EventEmitter {
     this.tree = this.view.tree;
     this.view.on('changed', () => this.emit('changed'));
 
-    this.export = (...args) => this.model.export(...args);
-
-    this.registerWorker = (worker)  => {
-      return this.network.registerWorker(worker);
-    };
-
     this.waitForPromises_ = new Map();
+  }
 
-    this.waitFor = (path) => {
-      // Does a tracking promise already exist?
-      if (this.waitForPromises_.has(path)) {
-        return this.waitForPromises_.get(path);
-      }
+  export(...args) {
+    return this.model.export(...args);
+  }
 
-      const pathParts = path.split('.');
-      // Does property already exist?
-      const exists = pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
+  registerWorker(worker) {
+    return this.network.registerWorker(worker);
+  }
 
-      if (!!exists) {
-        const promise = Promise.resolve(exists);
-        this.waitForPromises_.set(path, promise);
-        return promise;
-      } else {
-        const promise = new Promise((accept, reject) => {
-          this.view.on('changed', () => {
-            const exists = pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
-            if (!!exists) {
-              accept(exists);
-            }
-          });
-        });
-        this.waitForPromises_.set(path, promise);
-        return promise;
-      }
-    };
+  getPath_(path) {
+    const pathParts = path.split('.');
+
+    return pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
+  }
+
+  waitFor(path) {
+    // Does a tracking promise already exist?
+    if (this.waitForPromises_.has(path)) {
+      return this.waitForPromises_.get(path);
+    }
+
+    // Does property already exist?
+    const obj = this.getPath_(path);
+
+    if (!!obj) {
+      const promise = Promise.resolve(obj);
+      this.waitForPromises_.set(path, promise);
+      return promise;
+    } else {
+      const promise = new Promise((accept, reject) => {
+        const looker = () => {
+          const obj = this.getPath_(path);
+          if (!!obj) {
+            this.view.off('changed', looker);
+            return accept(obj);
+          }
+        };
+        this.view.on('changed', looker);
+      });
+      this.waitForPromises_.set(path, promise);
+      return promise;
+    }
   }
 }
