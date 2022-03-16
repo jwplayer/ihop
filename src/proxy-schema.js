@@ -7,8 +7,6 @@ import { IHOP_PROXY_TAG } from './constants.js';
 import getAllProperties from './get-all-properties.js';
 import SchemaNode from './proxy-schema-node.js';
 
-const finalizationCacheFlushInterval = 10000;
-
 // This can not be an arrow function because we use it
 // for constructor proxies
 const noop = function() {};
@@ -40,47 +38,12 @@ const doNotDescend = [
 ];
 
 export default class ProxySchema {
-  constructor(router, promiseStore, retainedStore) {
+  constructor(router, promiseStore, retainedStore, finalizationRegistry) {
     this.router = router;
     this.promiseStore = promiseStore;
     this.retainedStore = retainedStore;
 
-    this.finalizationRegistry = new FinalizationRegistry((heldValue) => this.onFinalization_(heldValue));
-    this.finalizationCache_ = {};
-    this.finalizationTimer_ = setInterval(() => this.flushAllFinalizationCaches_(), finalizationCacheFlushInterval);
-  }
-
-  onFinalization_(heldValue) {
-    const { destination, retainedId } = heldValue;
-
-    if (!this.finalizationCache_[destination]) {
-      this.finalizationCache_[destination] = [];
-    }
-
-    this.finalizationCache_[destination].push(retainedId);
-    if (this.finalizationCache_[destination].length > 100) {
-      this.flushFinalizationCache_(destination);
-    }
-  }
-
-  flushAllFinalizationCaches_() {
-    const destinations = Object.keys(this.finalizationCache_);
-    destinations.forEach((destination) => this.flushFinalizationCache_(destination));
-  }
-
-  flushFinalizationCache_(destination) {
-    if (!this.finalizationCache_[destination].length) {
-      return;
-    }
-
-    this.router.route({
-      type: 'final',
-      destination,
-      retainedIds: this.finalizationCache_[destination],
-      from: this.router.name,
-      source: this.router.path
-    });
-    this.finalizationCache_[destination] = [];
+    this.finalizationRegistry = finalizationRegistry;
   }
 
   retain_(obj) {

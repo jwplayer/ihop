@@ -11,6 +11,7 @@ import Finalizer from './finalizer.js';
 import Reflector from './reflector.js';
 import RetainedStore from './retained-store.js';
 import ProxySchema from './proxy-schema.js';
+import RemoteFinalizationRegistry from './remote-finalization-registry.js';
 import networkDefaults from './network-defaults.js';
 
 export default class IHop extends EventEmitter {
@@ -31,8 +32,11 @@ export default class IHop extends EventEmitter {
     // More routing of messages based on name and node path
     this.router = new Router(this.name, this.network);
 
+    // Finalization Registry with caching
+    this.finalizationRegistry = new RemoteFinalizationRegistry(this.router);
+
     // Heavy lifting for proxy creation and obj-to-proxy
-    this.proxySchema = new ProxySchema(this.router, this.promiseStore, this.retainedStore);
+    this.proxySchema = new ProxySchema(this.router, this.promiseStore, this.retainedStore, this.finalizationRegistry);
 
     // The model that housed both local and global state
     this.model = new Model(this.router, this.proxySchema, options?.model);
