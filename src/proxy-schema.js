@@ -84,7 +84,7 @@ export default class ProxySchema {
   }
 
   retain_(obj) {
-    let retainedId;// = this.retainedStore.find(obj);
+    let retainedId;
 
     if (!retainedId) {
       retainedId = nanoid();
@@ -141,7 +141,10 @@ export default class ProxySchema {
         return;
       }
 
-      cycleTracker.push(src);
+      // Functions can repeat but their context will make them different
+      if (typeof src === 'object') {
+        cycleTracker.push(src);
+      }
 
       dstNode[key] = this.toSchema(src, parent, cycleTracker, doNotDescend.includes(key));
     });
@@ -161,10 +164,10 @@ export default class ProxySchema {
         } else if (type === 'value') {
           return schema.value;
         }
-        // obj[IHOP_PROXY_TAG] = schema;
-
         if (schema.value) {
           this.deepFromSchema_(schema.value, obj, path, needsFinalization);
+        } else if (type !== 'value') {
+          obj[IHOP_PROXY_TAG] = true;
         }
         // it is import to descend into children first to buid the proxy-tree
         // from the bottom up
@@ -178,8 +181,6 @@ export default class ProxySchema {
         }
       } else {
         obj = {};
-        // obj[IHOP_PROXY_TAG] = schema;
-
         this.deepFromSchema_(schema, obj, generatePath(path, key), needsFinalization);
       }
     } else {

@@ -42,7 +42,7 @@ export default class Model extends EventEmitter {
   }
 
   export(name, value) {
-    if (typeof value === 'object' || typeof value === 'function') {
+    if ((typeof value === 'object' && value !== null) || typeof value === 'function') {
       this.localTree_[name] = this.proxySchema.toSchema(value);
     } else {
       this.localTree_[name] = value;

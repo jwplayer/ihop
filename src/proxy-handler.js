@@ -10,9 +10,6 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
       if (isStructuredCloneable(arg)) {
         return arg;
       }
-      if (arg[IHOP_PROXY_TAG]) {
-        return arg[IHOP_PROXY_TAG];
-      }
       return proxySchema.toSchema(arg);
     });
   };
@@ -66,7 +63,7 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
     get(targetObj, property, receiver) {
       const propType = typeof targetObj[property];
 
-      if (property === IHOP_PROXY_TAG || propType === 'object' || propType === 'function') {
+      if (property === IHOP_PROXY_TAG || (propType === 'object' && !targetObj[property][IHOP_PROXY_TAG]) || propType === 'function') {
         return targetObj[property];
       }
       // The engine checks if the proxy is thenable and this results in
