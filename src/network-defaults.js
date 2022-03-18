@@ -66,5 +66,6 @@ if (global.msgpackr) {
 }
 
 export default {
-  codec
+  global,
+  codec,
 };

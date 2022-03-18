@@ -4,7 +4,7 @@ import SchemaNode from './proxy-schema-node.js';
 import sameOrigin from './same.js';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants.js';
 
-const delay = (time) => new Promise((accept) => setTimeout(accept, time));
+import networkDefaults from './network-defaults.js';
 
 class Node {
   constructor(id, window, origin) {
@@ -34,13 +34,14 @@ class WorkerNode extends Node {
  * Network - security for cross-origin message passing
  */
 export default class Network extends EventEmitter {
-  constructor(global, options = {}) {
+  constructor(options = {}) {
     super();
-    this.global = global;
+    const networkOptions = Object.assign({}, networkDefaults, options);
+
     this.nodes_ = new Map(/* <uuid, Node> */);
     this.sourceToId_ = new WeakMap(/* <window, uuid> */);
 
-    this.buildOptions_(options);
+    this.buildOptions_(networkOptions);
     this.setupAllowedOrigins_();
     this.setupParentNode_();
 
@@ -49,6 +50,8 @@ export default class Network extends EventEmitter {
   }
 
   buildOptions_(options) {
+    this.global = options.global;
+
     const isWindowRoot = (!this.global || this.global.parent === this.global);
 
     this.codec_ = options.codec;
@@ -108,14 +111,19 @@ export default class Network extends EventEmitter {
     worker.addEventListener('message', (...args) => this.onMessage(...args));
   }
 
-  toNode(nodeId, message) {
-    const ihopMessage = this.ihopMessage_(message);
+  toNodeEncoded_(nodeId, ihopMessage) {
     const node = this.nodes_.get(nodeId);
 
     if (node) {
       this.emit('send');
       this.nodes_.get(nodeId).send(ihopMessage);
     }
+  }
+
+  toNode(nodeId, message) {
+    const ihopMessage = this.ihopMessage_(message);
+
+    this.toNodeEncoded_(nodeId, ihopMessage);
   }
 
   toParent(message) {
@@ -127,11 +135,7 @@ export default class Network extends EventEmitter {
 
     for (let nodeId of this.nodes_.keys()) {
       if (nodeId !== this.parentId_) {
-        const node = this.nodes_.get(nodeId);
-        if (node) {
-          this.emit('send');
-          node.send(ihopMessage);
-        }
+        this.toNodeEncoded_(nodeId, ihopMessage);
       }
     }
   }
@@ -140,12 +144,7 @@ export default class Network extends EventEmitter {
     return this.allowedOrigins_.some((allowedOrigin) => sameOrigin(allowedOrigin, origin));
   }
 
-  /**
-   * Handles all events and forwards them to a matching `on*` handler defined in this class
-   * @param  {object} data - The event payload
-   * @param  {window} eventSource - The source window the event originated from
-   */
-  async onMessage(message) {
+  checkMessage_(message) {
     const { origin, srcElement, data } = message;
     let { source } = message;
     const { allowedOrigins } = this.options_;
@@ -155,34 +154,41 @@ export default class Network extends EventEmitter {
     }
 
     if (!data || !data.data || !source) {
-      return;
+      return false;
     }
 
     // If the message is not from an allowed origin throw it out before any
     // further processing.
     if (this.allowedOrigins_.length && !this.isAllowedOrigin_(origin)) {
-      return;
+      return false;
     }
 
     const { version } = data;
 
     if (!version) {
-      return;
+      return false;
     }
 
     const [major, minor] = version.split('.');
 
     if (major !== IHOP_MAJOR_VERSION) {
       console.error('Received a message from an incompatible IHop version', version, 'expecting', IHOP_VERSION);
-      return;
+      return false;
     } else if (minor !== IHOP_MINOR_VERSION) {
       console.warn('Received a message from a different IHop version', version, 'expecting', IHOP_VERSION);
     }
 
+    return true;
+  }
+
+  emitMessage_ (message) {
+    const { origin, srcElement, data } = message;
+    let { source } = message;
+
     this.emit('receive');
 
-    if (this.slow) {
-      await delay(400);
+    if (!source) {
+      source = srcElement;
     }
 
     let sourceId;
@@ -208,5 +214,18 @@ export default class Network extends EventEmitter {
     });
 
     this.emit('message', newMessage);
+  }
+
+  /**
+   * Handles all events and forwards them to a matching `on*` handler defined in this class
+   * @param  {object} data - The event payload
+   * @param  {window} eventSource - The source window the event originated from
+   */
+  async onMessage(message) {
+    const isValid = this.checkMessage_(message);
+
+    if (isValid) {
+      this.emitMessage_(message);
+    }
   }
 }

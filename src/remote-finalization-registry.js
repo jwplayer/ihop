@@ -33,8 +33,7 @@ export default class RemoteFinalizationRegistry {
     const sinceLastSent = Date.now() - this.lastSent_[destination];
 
     if (sinceLastSent > MAX_CACHE_TIME || this.cache_[destination]. length > MAX_CACHE_SIZE) {
-      this.flushCache_(destination);
-      return;
+      return this.flushCache_(destination);
     }
 
     clearTimeout(this.debounceTimer_[destination]);
