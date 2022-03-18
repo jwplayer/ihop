@@ -122,14 +122,7 @@ export default class Reflector {
     try {
       const target = this.retainedStore.get(targetName);
 
-      if (!target) {
-        return this.doReturn(message, undefined);
-      }
-
       Reflect.set(target, property, value);
-      this.doReturn(message, value);
-    } catch (error) {
-      this.doReturn(message, undefined, error);
-    }
+    } catch (error) {}
   }
 }
