@@ -2,6 +2,8 @@ import isStructuredCloneable from './is-structured-cloneable.js';
 import { IHOP_PROXY_TAG } from './constants.js';
 
 const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName) => {
+  const { name: from, path: source } = router;
+
   const sanitizeArgs = (args) => {
     // if one of the arguments is a function - ie. a callback:
     // 1) store function locally in a store and get a uuid
@@ -14,50 +16,45 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
     });
   };
 
+  const doApplyOrConstruct = (type, unsafeArgs = []) => {
+    const [promiseId, promise] = promiseStore.makePromise();
+    // Arguments might need to be handled specially
+    const args = sanitizeArgs(unsafeArgs);
+
+    router.route({
+      type,
+      targetName,
+      args,
+      destination,
+      from,
+      source,
+      promiseId,
+    });
+
+    return promise;
+  };
+
   return {
     apply(targetFn, thisArgs, args, receiver) {
       // A trap for a function call
-      // Arguments might need to be handled specially
-      const [promiseId, promise] = promiseStore.makePromise();
-      const safeArgs = sanitizeArgs(args);
-
-      router.route({
-        type: 'call',
-        targetName,
-        args: safeArgs,
-        destination,
-        from: router.name,
-        source: router.path,
-        promiseId,
-      });
-
-      return promise;
+      return doApplyOrConstruct('call', args);
     },
 
     construct(targetObj, args, newTarget) {
-      const [promiseId, promise] = promiseStore.makePromise();
-      const safeArgs = sanitizeArgs(args);
-
-      // Throw?
-      router.route({
-        type: 'new',
-        targetName,
-        args: safeArgs,
-        destination,
-        from: router.name,
-        source: router.path,
-        promiseId,
-      });
-
-      return promise;
+      // A trap for the new operator
+      return doApplyOrConstruct('new', args);
     },
 
     defineProperty() {
       // Throw?
+      return false;
     },
 
     deleteProperty() {
-      return false;
+      // TODO:
+      // We can't actually return a promise from this only boolean :(
+      // So we pretend the delete always succeeds
+      return true;
     },
 
     get(targetObj, property, receiver) {
@@ -81,8 +78,8 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
         targetName,
         property,
         destination,
-        from: router.name,
-        source: router.path,
+        from,
+        source,
         promiseId,
       });
 
@@ -90,31 +87,60 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
     },
 
     getOwnPropertyDescriptor() {
-      // Throw?
+      // This is possible
     },
 
     getPrototypeOf() {
+      // TODO:
+      // This is possible with two caveats:
+      //   1. `instanceof` will not work
+      //   2. `Object#isPrototypeOf` will not work
 
+      // For example:
+      //   obj = {};
+      //    p = new Proxy(obj, {
+      //       getPrototypeOf(target) {
+      //           return Promise.resolve(Array.prototype);
+      //       }
+      //   });
+      //   console.log(
+      //       await Object.getPrototypeOf(p) === Array.prototype,  // true
+      //       await Reflect.getPrototypeOf(p) === Array.prototype, // true
+      //       await p.__proto__ === Array.prototype,               // true
+      //       Array.prototype.isPrototypeOf(p),              // FALSE!!
+      //       p instanceof Array                             // FALSE!!
+      //   );
     },
 
     has() {
-
+      // Throw?
+      // I don't think you can return anything other than boolean
+      throw new SyntaxError('You can not use `in` operator with remote proxies.');
     },
 
     isExtensible() {
       // Throw?
+      // I don't think you can return anything other than boolean
+      return true;
     },
 
     ownKeys() {
       // Throw?
+      // I don't think you can return anything other than array of strings
+
+      // Object.getOwnPropertyNames and Object.keys seem to coerce
+      // the promise into an empty array.
     },
 
     preventExtensions() {
       // Throw?
+      // I don't think you can return anything other than boolean
+      return false;
     },
 
     set(targetObj, property, value) {
-      // const [promiseId, promise] = promiseStore.makePromise();
+      // We can't actually return a promise from this only boolean :(
+      // So we pretend the set always works
 
       router.route({
         type: 'set',
@@ -122,8 +148,8 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
         property,
         destination,
         value,
-        from: router.name,
-        source: router.path,
+        from,
+        source,
       });
 
       return true;
