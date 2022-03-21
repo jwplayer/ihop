@@ -106,15 +106,17 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/msgpackr@1.5.4/dist/index.js"></script>
 <script src="../../dist/ihop.js"></script>
+<script src="slow-network.js"></script>
 <script>
+  const network = new SlowNetwork({
+    allowedOrigins: [
+      'https://transmuxer-output.s3.amazonaws.com',
+      'https://jrivera-alternate.s3.amazonaws.com',
+      'http://127.0.0.1:8080',
+    ]
+  });
   const ihop = new IHop('main', {
-    network: {
-      allowedOrigins: [
-        'https://transmuxer-output.s3.amazonaws.com',
-        'https://jrivera-alternate.s3.amazonaws.com',
-        'http://127.0.0.1:8080',
-      ]
-    }
+    network
   });
   const connIndicator = document.querySelector('#connected');
   const sendIndicator = document.querySelector('#send');

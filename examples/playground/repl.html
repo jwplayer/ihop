@@ -347,6 +347,7 @@ ihop.export('foo', foo);`;
       <\/style>
       <script src="https://cdn.jsdelivr.net/npm/msgpackr@1.5.4/dist/index.js"><\/script>
       <script src="../../dist/ihop.js"><\/script>
+      <script src="slow-network.js"><\/script>
       <body>
       <style>
         #modem-lights-container {
@@ -398,7 +399,10 @@ ihop.export('foo', foo);`;
         el.innerHTML = 'Window "${window.name}"';
       <\/script>
       <script>
-        const ihop = new IHop('${name}');
+        const network = new SlowNetwork();
+        const ihop = new IHop('${name}', {
+          network
+        });
         const connIndicator = document.querySelector('#connected');
         const sendIndicator = document.querySelector('#send');
         const receiveIndicator = document.querySelector('#receive');
@@ -448,20 +452,22 @@ ihop.export('foo', foo);`;
 </script>
 <script src="https://cdn.jsdelivr.net/npm/msgpackr@1.5.4/dist/index.js"></script>
 <script src="../../dist/ihop.js"></script>
+<script src="slow-network.js"></script>
 <script>
   let parentOrigin = 'https://jrivera-projects.s3.amazonaws.com';
   if (window.location.origin === 'http://127.0.0.1:8080') {
     parentOrigin = window.location.origin;
   }
+  const network = new SlowNetwork({
+    parentOrigin,
+    allowedOrigins: [
+      'https://transmuxer-output.s3.amazonaws.com',
+      'https://jrivera-alternate.s3.amazonaws.com',
+      'http://127.0.0.1:8080',
+    ]
+  });
   const ihop = new IHop(`${window.name}-parent`, {
-    network: {
-      parentOrigin,
-      allowedOrigins: [
-        'https://transmuxer-output.s3.amazonaws.com',
-        'https://jrivera-alternate.s3.amazonaws.com',
-        'http://127.0.0.1:8080',
-      ]
-    }
+    network
   });
   const connIndicator = document.querySelector('#connected');
   const sendIndicator = document.querySelector('#send');
