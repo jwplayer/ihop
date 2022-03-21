@@ -223,7 +223,7 @@ ihop.export('foo', foo);`;
     preview();
   });
 
-  const indentLines = (buffer, start, end) => {
+  const indentLines = (buffer, start, end, unindent = false) => {
     const lines = buffer.split('\n');
     let startCursor = start;
     let endCursor = end;
@@ -265,11 +265,31 @@ ihop.export('foo', foo);`;
 
       return false;
     });
+    let startDiff = null;
+    let endDiff = 0;
+
     const indented = selected.map((line) => {
-      return '  ' + line;
+      if (unindent) {
+        const before = line.length;
+        const str = line.replace(/^\s\s?/, '');
+        const after = str.length;
+
+        if (startDiff === null) {
+          startDiff += after - before;
+        }
+
+        endDiff += after - before;
+        return str;
+      } else {
+        if (startDiff === null) {
+          startDiff = 2;
+        }
+        endDiff += 2;
+        return '  ' + line;
+      }
     });
 
-    return [[...before, ...indented, ...after].join('\n'), indented.length * 2];
+    return [[...before, ...indented, ...after].join('\n'), startDiff, endDiff];
   };
 
   [html, css, js].forEach((tag) => {
@@ -289,14 +309,14 @@ ihop.export('foo', foo);`;
       const buffer = active.value;
 
       if (charCode === 9) {
+        const unindent = !!event.shiftKey;
         // Tab key adds 2 spaces
         event.preventDefault();
         if (start !== end) {
-          const [indented, count] = indentLines(buffer, start, end);
+          const [indented, startCount, totalCount] = indentLines(buffer, start, end, unindent);
 
-          spacesAdded = count;
           active.value = indented;
-          active.setSelectionRange(start, end + count);
+          active.setSelectionRange(start + startCount, end + totalCount);
         } else {
           active.value = buffer.slice(0, start)
             + '  '
