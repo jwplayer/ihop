@@ -13,46 +13,32 @@ const Esimorp = () => {
 
 export default class PromiseStore {
   constructor() {
-    this.store = new Map(/*<uuid, weakref(promise)>*/);
-    this.highWatermark = 100;
+    this.store = new Map(/*<uuid, promise>*/);
   }
 
   makePromise() {
     const promiseId = nanoid();
     const promise = Esimorp();
 
-    this.store.set(promiseId, new WeakRef(promise));
-
-    if (this.store.size > this.highWatermark) {
-      this.cleanPromises();
-      this.highWatermark = this.store.size * 2;
-    }
+    this.store.set(promiseId, promise);
 
     return [promiseId, promise];
   }
 
-  // Remove any promises that no longer have a live reference
-  // since they have been garbage collected.
-  cleanPromises() {
-    for (let [promiseId, promiseRef] of this.store) {
-      if (promiseRef.deref() === null) {
-        this.store.delete(promiseId);
-      }
-    }
-  }
-
   getAndDeletePromise(promiseId) {
-    const weakRef = this.store.get(promiseId);
-    if (!weakRef) {
+    const promise = this.store.get(promiseId);
+
+    if (!promise) {
       return;
     }
 
     this.store.delete(promiseId);
-    return weakRef.deref();
+    return promise;
   }
 
   resolvePromise(promiseId, value) {
     const promise = this.getAndDeletePromise(promiseId);
+
     if (promise) {
       return promise.resolve(value);
     }
@@ -60,6 +46,7 @@ export default class PromiseStore {
 
   rejectPromise(promiseId, value) {
     const promise = this.getAndDeletePromise(promiseId);
+
     if (promise) {
       return promise.reject(value);
     }
