@@ -29,7 +29,7 @@ export default class Completer {
     }
 
     if (typeof error === 'undefined') {
-      this.promiseStore.acceptPromise(promiseId, value);
+      this.promiseStore.resolvePromise(promiseId, value);
     } else {
       this.promiseStore.rejectPromise(promiseId, error);
     }

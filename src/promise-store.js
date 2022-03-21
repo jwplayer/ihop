@@ -2,12 +2,12 @@ import { nanoid } from 'nanoid';
 
 // Backwards promise - resolvable from outside
 const Esimorp = () => {
-  let accept, reject;
+  let resolve, reject;
   const promise = new Promise((...args) => {
-    [accept, reject] = args;
+    [resolve, reject] = args;
   });
-  promise.doAccept = accept;
-  promise.doReject = reject;
+  promise.resolve = resolve;
+  promise.reject = reject;
   return promise;
 };
 
@@ -51,17 +51,17 @@ export default class PromiseStore {
     return weakRef.deref();
   }
 
-  acceptPromise(promiseId, value) {
+  resolvePromise(promiseId, value) {
     const promise = this.getAndDeletePromise(promiseId);
     if (promise) {
-      promise.doAccept(value);
+      return promise.resolve(value);
     }
   }
 
   rejectPromise(promiseId, value) {
     const promise = this.getAndDeletePromise(promiseId);
     if (promise) {
-      promise.doReject(value);
+      return promise.reject(value);
     }
   }
 }
