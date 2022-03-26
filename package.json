@@ -11,8 +11,8 @@
     "build": "npm-run-all -p build:*",
     "build:dev": "rollup -c rollup.config.dev.js",
     "build:prod": "rollup -c rollup.config.prod.js",
-    "test": "c8 qunit",
-    "test:watch": "qunit --watch",
+    "test": "c8 qunit test/**/*-test.js",
+    "test:watch": "qunit --watch test/**/*-test.js",
     "watch": "rollup -c rollup.config.dev.js -w"
   },
   "author": "Jon-Carlos Rivera",

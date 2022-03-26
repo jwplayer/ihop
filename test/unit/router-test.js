@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import EventEmitter from 'eventemitter3';
 
-import Router from '../src/router.js';
+import Router from '../../src/router.js';
 import globalMock from './mocks/global.js';
 
 const setup = () => {
@@ -162,7 +162,7 @@ QUnit.test(`#route correctly routes to self`, async (assert) => {
     from: 'foo'
   });
 
-  assert.equal(fake.callCount, 1, 'called toNode');
+  assert.equal(fake.callCount, 1, 'called emit');
   assert.equal(fake.firstArg, 'aType', 'event has correct name');
   assert.deepEqual(fake.lastArg, {
     type: 'aType',

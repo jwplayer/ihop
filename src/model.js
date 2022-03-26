@@ -42,6 +42,7 @@ export default class Model extends EventEmitter {
   }
 
   export(name, value) {
+    // TODO: Protect against collisions
     if ((typeof value === 'object' && value !== null) || typeof value === 'function') {
       this.localTree_[name] = this.proxySchema.toSchema(value);
     } else {
