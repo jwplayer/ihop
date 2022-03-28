@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import EventEmitter from 'eventemitter3';
 
-import Router from '../../src/router.js';
+import Router from '../../src/net/router.js';
 import globalMock from './mocks/global.js';
 
 const setup = () => {

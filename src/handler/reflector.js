@@ -1,5 +1,4 @@
-import ProxyHandler from './proxy-handler.js';
-import isStructuredCloneable from './is-structured-cloneable.js';
+import isStructuredCloneable from '../util/is-structured-cloneable.js';
 
 const noop = () => {};
 

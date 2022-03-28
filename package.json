@@ -2,6 +2,7 @@
   "name": "ihop",
   "version": "1.0.0",
   "description": "Share objects between iframes and use them as though they are completely local!",
+  "browser": "dist/ihop.min.js",
   "main": "src/index.js",
   "directories": {
     "test": "test"

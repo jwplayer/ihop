@@ -1,4 +1,4 @@
-import { IHOP_PROXY_TAG } from './constants.js';
+import { IHOP_PROXY_TAG } from '../util/constants.js';
 
 export default class Completer {
   constructor(router, promiseStore, proxySchema) {

@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import EventEmitter from 'eventemitter3';
 
-import View from '../../src/view.js';
+import View from '../../src/state/view.js';
 
 const setup = () => {
   const model = new EventEmitter();

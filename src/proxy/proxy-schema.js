@@ -1,10 +1,11 @@
 import { nanoid } from 'nanoid';
 
-import isStructuredCloneable from './is-structured-cloneable.js';
+import isStructuredCloneable from '../util/is-structured-cloneable.js';
+import generatePath from '../util/generate-path.js';
+import { IHOP_PROXY_TAG } from '../util/constants.js';
+import getAllProperties from '../util/get-all-properties.js';
+
 import ProxyHandler from './proxy-handler.js';
-import generatePath from './generate-path.js';
-import { IHOP_PROXY_TAG } from './constants.js';
-import getAllProperties from './get-all-properties.js';
 import SchemaNode from './proxy-schema-node.js';
 
 // This can not be an arrow function because we use it

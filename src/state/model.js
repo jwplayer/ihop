@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import EventEmitter from 'eventemitter3';
 import global from 'global';
 
-import isStructuredCloneable from './is-structured-cloneable.js';
+import isStructuredCloneable from '../util/is-structured-cloneable.js';
 
 const defaultOptions = {
   forceRoot: false,

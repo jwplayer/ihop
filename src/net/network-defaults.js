@@ -1,5 +1,5 @@
 import global from 'global';
-import SchemaNode from './proxy-schema-node.js';
+import SchemaNode from '../proxy/proxy-schema-node.js';
 
 // Use a simple packing scheme by default to de/ser SchemaNodes
 let codec = {

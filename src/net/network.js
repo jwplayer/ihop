@@ -1,8 +1,9 @@
 import EventEmitter from 'eventemitter3';
 import { nanoid } from 'nanoid';
-import SchemaNode from './proxy-schema-node.js';
-import sameOrigin from './same.js';
-import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from './constants.js';
+
+import SchemaNode from '../proxy/proxy-schema-node.js';
+import sameOrigin from '../util/same.js';
+import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from '../util/constants.js';
 
 import networkDefaults from './network-defaults.js';
 

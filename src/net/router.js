@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3';
 
-import generatePath from './generate-path.js';
+import generatePath from '../util/generate-path.js';
 
 export default class Router extends EventEmitter {
   constructor(name, network) {

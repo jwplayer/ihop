@@ -1,7 +1,6 @@
 import EventEmitter from 'eventemitter3';
 
-import ProxyHandler from './proxy-handler.js';
-import generatePath from './generate-path.js';
+import generatePath from '../util/generate-path.js';
 
 export default class View extends EventEmitter {
   constructor(model, proxySchema) {
