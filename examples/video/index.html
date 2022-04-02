@@ -22,9 +22,9 @@
 
   // Wait for the objects we need.to be available..
   Promise.all([
-    ihop.waitFor('main.A.video'),
-    ihop.waitFor('main.A.B.buyNow'),
-    ihop.waitFor('main.A.B.buyNowContainer')
+    ihop.import('main.A.video'),
+    ihop.import('main.A.B.buyNow'),
+    ihop.import('main.A.B.buyNowContainer')
   ]).then(([videoEl, buyNowEl, buyNowContEl])=> {;
     const currTimeProg = document.querySelector('#progress')
 

@@ -202,7 +202,7 @@
 }`;
       js.value = lsGet('js') ?? `const out = document.querySelector('#output');
 
-ihop.waitFor('main.right-parent.right.foo').then(async (foo) => {
+ihop.import('main.right-parent.right.foo').then(async (foo) => {
   const handler = async (e) => {
     const el = await e.target;
     out.innerHTML += await el.innerText + '<br>';
@@ -450,7 +450,7 @@ ihop.export('foo', foo);`;
         ihop.network.on('send', () => blink(sendIndicator, 'radial-gradient(circle at top 45% left 65%, orangered, darkred)', 'radial-gradient(circle at top 45% left 65%, darkred, black)'));
         ihop.network.on('receive', () => blink(receiveIndicator, 'radial-gradient(circle at top 45% left 65%, orangered, darkred)', 'radial-gradient(circle at top 45% left 65%, darkred, black)'));
 
-        ihop.waitFor('main.slow').then((slow) => {
+        ihop.import('main.slow').then((slow) => {
           slow.addEventListener('click', async () => ihop.network.slow = await slow.checked);
         });
       <\/script>
@@ -514,7 +514,7 @@ ihop.export('foo', foo);`;
   ihop.export('preview', window.preview);
 
   // Holy smokes! The playground app actually uses IHop too!
-  ihop.waitFor('main.slow').then((slow) => {
+  ihop.import('main.slow').then((slow) => {
     slow.addEventListener('click', async () => ihop.network.slow = await slow.checked);
   });
 </script>

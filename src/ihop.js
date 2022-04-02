@@ -106,7 +106,7 @@ export default class IHop extends EventEmitter {
     this.tree = this.view.tree;
     this.view.on('changed', () => this.emit('changed'));
 
-    this.waitForPromises_ = new Map();
+    this.importPromises_ = new Map();
   }
 
   export(...args) {
@@ -123,10 +123,10 @@ export default class IHop extends EventEmitter {
     return pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
   }
 
-  waitFor(path) {
+  import(path) {
     // Does a tracking promise already exist?
-    if (this.waitForPromises_.has(path)) {
-      return this.waitForPromises_.get(path);
+    if (this.importPromises_.has(path)) {
+      return this.importPromises_.get(path);
     }
 
     // Does property already exist?
@@ -134,7 +134,7 @@ export default class IHop extends EventEmitter {
 
     if (!!obj) {
       const promise = Promise.resolve(obj);
-      this.waitForPromises_.set(path, promise);
+      this.importPromises_.set(path, promise);
       return promise;
     } else {
       const promise = new Promise((accept, reject) => {
@@ -147,7 +147,7 @@ export default class IHop extends EventEmitter {
         };
         this.view.on('changed', looker);
       });
-      this.waitForPromises_.set(path, promise);
+      this.importPromises_.set(path, promise);
       return promise;
     }
   }

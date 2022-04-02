@@ -3,7 +3,37 @@
 <script src="../../dist/ihop.js"></script>
 <script>
   const ihop = new IHop('C');
-  const compose = (fnA, fnB) => async (...args) => fnA(await fnB(...args));
+  const compose = (fn) => async (arr) => {
+    const ret = [];
+    for (let i = 0; i < arr.length; i++) {
+      ret[i] = await fn(arr[i], i)
+    }
+    return ret;
+  };
 
-  ihop.export('compose', compose);
+  const compose2 = (fn) => (arr) => Promise.all(arr.map((e, i) => fn(e, i)));
+
+  class Foo {
+    constructor() {
+      this.foo = 'foo';
+    }
+    print() {
+      console.log(this.foo);
+    }
+  }
+
+  class Bar extends Foo {
+    constructor(arg) {
+      super();
+      this.bar = arg;
+    }
+    print() {
+      super.print();
+      console.log(this.bar);
+    }
+  }
+
+
+  ihop.export('fun', compose2);
+  ihop.export('class', Bar);
 </script>

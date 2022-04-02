@@ -13,7 +13,7 @@
   let setup = false;
 
   // Wait for the object we need.to be available..
-  ihop.waitFor('main.A.video').then(videoEl => {
+  ihop.import('main.A.video').then(videoEl => {
     const currTimeEl = document.querySelector('#currenttime');
 
     document.querySelector('#play').addEventListener('click', () => videoEl.play());

@@ -52,8 +52,8 @@ Step 4 - Use what you exported from another iframe or the parent context
 <script type="text/javascript">
   // This is assuming that we are in another iframe:
   Promise.all([
-    ihop.waitFor('pick_a_namespace.test'),
-    ihop.waitFor('pick_a_namespace.func')
+    ihop.import('pick_a_namespace.test'),
+    ihop.import('pick_a_namespace.func')
   ]).then(async ([test, func]) => {
     console.log(await test.foo);  //=> bar
     console.log(await func());    //=> Hello world!
@@ -69,7 +69,7 @@ Congratulations! You’ve just successfully used IHop to export an object and a 
 * [new IHop(nameSpace, options)](#IHop.constructor)
     * _methods_
         * [.export(name, object)](#IHop.export) ⇒ <code>void</code>
-        * [.waitFor(path)](#IHop.waitFor) ⇒ <code>Promise</code>
+        * [.import(path)](#IHop.import) ⇒ <code>Promise</code>
         * [.registerWorker(worker)](#IHop.registerWorker) ⇒ <code>void</code>
     * _properties_
         * [.tree](#IHop.tree)
@@ -116,8 +116,8 @@ Makes `object` available to every connected iframe via `name` within this iframe
 > ihop.export('bar', baz);
 ```
 
-<a name="IHop.waitFor"></a>
-### ihop.waitFor(path) ⇒ <code>Promise</code>
+<a name="IHop.import"></a>
+### ihop.import(path) ⇒ <code>Promise</code>
 Waits for a specific path to becomes available and then resolves the promise with the object or namespace at that path.
 
 **Kind**: instance method of <code>[IHop](#IHop)</code>
@@ -130,14 +130,14 @@ Waits for a specific path to becomes available and then resolves the promise wit
 ```js
 // An iframe with the namespace `A` is the root namespace and contains another iframe with the namespace `B`
 // The iframe `B` exports an object named `foo`
-> ihop.waitFor('A.B.foo').then((foo) => {
+> ihop.import('A.B.foo').then((foo) => {
     // Do something with 'foo'
   });
 
 // Wait for more than one export
 > Promise.all([
-      ihop.waitFor('A.B.foo'),
-      ihop.waitFor('A.bar')
+      ihop.import('A.B.foo'),
+      ihop.import('A.bar')
     ]).then(([foo, bar]) => {
     // Do something with 'foo' and 'bar'
   });
@@ -170,7 +170,7 @@ Contains the exported namespace hierarchy.
 ```js
 // An iframe with the namespace `A` contains another iframe with the namespace `B`
 // The iframe `B` exports an object named `foo`
-> ihop.waitFor('A.B.foo').then(() => {
+> ihop.import('A.B.foo').then(() => {
     // We can also access foo via:
     const foo = ihop.tree.A.B.foo;
   });
@@ -202,7 +202,7 @@ Now in B, you want to use that function:
 <script type="text/javascript">
   const ihop = new IHop('B');
 
-  ihop.waitFor('A.compose').then(async (compose) => {
+  ihop.import('A.compose').then(async (compose) => {
     const add = (a, b) => a + b;
     const double = (n) => n * 2;
 

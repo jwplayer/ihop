@@ -145,10 +145,10 @@
 
   // Holy smokes! The playground app actually uses IHop too!
   Promise.all([
-    ihop.waitFor('main.left-parent.refresh'),
-    ihop.waitFor('main.left-parent.preview'),
-    ihop.waitFor('main.right-parent.refresh'),
-    ihop.waitFor('main.right-parent.preview'),
+    ihop.import('main.left-parent.refresh'),
+    ihop.import('main.left-parent.preview'),
+    ihop.import('main.right-parent.refresh'),
+    ihop.import('main.right-parent.preview'),
   ]).then(([leftButton, leftPreview, rightButton, rightPreview]) => {
     leftButton.addEventListener('click', rightPreview);
     rightButton.addEventListener('click', leftPreview);
