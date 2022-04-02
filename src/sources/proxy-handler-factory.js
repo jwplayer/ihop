@@ -1,7 +1,7 @@
 import isStructuredCloneable from '../util/is-structured-cloneable.js';
 import { IHOP_PROXY_TAG } from '../util/constants.js';
 
-const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName) => {
+const proxyHandlerFactory = (router, promiseStore, proxySchema, destination, targetName) => {
   const { name: from, path: source } = router;
 
   const sanitizeArgs = (args) => {
@@ -160,6 +160,6 @@ const ProxyHandler = (router, promiseStore, proxySchema, destination, targetName
       return false;
     },
   };
-}
+};
 
-export default ProxyHandler;
+export default proxyHandlerFactory;

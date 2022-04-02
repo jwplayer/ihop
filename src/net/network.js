@@ -6,32 +6,8 @@ import sameOrigin from '../util/same.js';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from '../util/constants.js';
 
 import networkDefaults from './network-defaults.js';
-
-class Node {
-  constructor(id, window, origin) {
-    this.id = id;
-    this.origin = origin;
-    this.window = window;
-  }
-
-  send(message) {
-    if (this.window) {
-      this.window.postMessage(message, this.origin);
-    }
-  }
-}
-
-class WorkerNode extends Node {
-  constructor(id, window, origin) {
-    super(id, window, origin);
-  }
-
-  send(message) {
-    if (this.window) {
-      this.window.postMessage(message);
-    }
-  }
-}
+import Node from './node.js';
+import WorkerNode from './worker-node.js';
 
 /**
  * Network - security for cross-origin message passing

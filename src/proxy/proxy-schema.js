@@ -5,12 +5,7 @@ import generatePath from '../util/generate-path.js';
 import { IHOP_PROXY_TAG } from '../util/constants.js';
 import getAllProperties from '../util/get-all-properties.js';
 
-import ProxyHandler from './proxy-handler.js';
 import SchemaNode from './proxy-schema-node.js';
-
-// This can not be an arrow function because we use it
-// for constructor proxies
-const noop = function() {};
 
 // List of properties that we do not create deep-proxies for
 const doNotDescend = [
@@ -39,10 +34,11 @@ const doNotDescend = [
 ];
 
 export default class ProxySchema {
-  constructor(router, promiseStore, retainedStore, finalizationRegistry) {
+  constructor(router, promiseStore, retainedStore, finalizationRegistry, proxyHandlerFactory) {
     this.router = router;
     this.promiseStore = promiseStore;
     this.retainedStore = retainedStore;
+    this.proxyHandlerFactory = proxyHandlerFactory;
 
     this.finalizationRegistry = finalizationRegistry;
   }
@@ -122,7 +118,9 @@ export default class ProxySchema {
         const type = schema.type;
 
         if (type === 'function') {
-          obj = noop;
+          // This can not be an arrow function because we use it
+          // for constructor proxies
+          obj = function() {};
         } else if (type === 'object') {
           obj = {};
         } else if (type === 'value') {
@@ -135,7 +133,7 @@ export default class ProxySchema {
         }
         // it is import to descend into children first to buid the proxy-tree
         // from the bottom up
-        obj = new Proxy(obj, ProxyHandler(this.router, this.promiseStore, this, path, schema.id));
+        obj = new Proxy(obj, this.proxyHandlerFactory(this.router, this.promiseStore, this, path, schema.id));
 
         if (needsFinalization) {
           this.finalizationRegistry.register(obj, {

@@ -4,18 +4,20 @@ import EventEmitter from 'eventemitter3';
 import Network from './net/network.js';
 import Router from './net/router.js';
 
-import PromiseStore from './store/promise-store.js';
-import RetainedStore from './store/retained-store.js';
+import PromiseStore from './stores/promise-store.js';
+import RetainedStore from './stores/retained-store.js';
 
 import Model from './state/model.js';
 import View from './state/view.js';
 
-import RemoteFinalizationRegistry from './proxy/remote-finalization-registry.js';
 import ProxySchema from './proxy/proxy-schema.js';
 
-import Completer from './handler/completer.js';
-import Finalizer from './handler/finalizer.js';
-import Reflector from './handler/reflector.js';
+import Completer from './sinks/completer.js';
+import Finalizer from './sinks/finalizer.js';
+import Reflector from './sinks/reflector.js';
+
+import RemoteFinalizationRegistry from './sources/remote-finalization-registry.js';
+import proxyHandlerFactory from './sources/proxy-handler-factory.js';
 
 export default class IHop extends EventEmitter {
   constructor(name, options) {
@@ -23,90 +25,60 @@ export default class IHop extends EventEmitter {
     this.name = name;
 
     // General Support
-    if (options?.network instanceof Network) {
-      this.network = options.network;
-    } else {
-      this.network = new Network(options?.network);
-    }
+    this.maybeConstructWithOptions_(Network, 'network', options);
 
     // Promise store holds promises that are waiting to be "completed"
-    if (options?.promiseStore instanceof PromiseStore) {
-      this.promiseStore = options.promiseStore;
-    } else {
-      this.promiseStore = new PromiseStore();
-    }
+    this.maybeConstructWithOptions_(PromiseStore, 'promiseStore', options);
 
     // Retain store retains references to objects that have remote proxies
     // This includes exports and return values
-    if (options?.retainedStore instanceof RetainedStore) {
-      this.retainedStore = options.retainedStore;
-    } else {
-      this.retainedStore = new RetainedStore();
-    }
+    this.maybeConstructWithOptions_(RetainedStore, 'retainedStore', options);
 
     // More routing of messages based on name and node path
-    if (options?.router instanceof Router) {
-      this.router = options.router;
-    } else {
-      this.router = new Router(this.name, this.network);
-    }
+    this.maybeConstructWithOptions_(Router, 'router', options, this.name, this.network);
 
     // Finalization Registry with remote messaging and caching
-    if (options?.finalizationRegistry instanceof RemoteFinalizationRegistry) {
-      this.finalizationRegistry = options.finalizationRegistry;
-    } else {
-      this.finalizationRegistry = new RemoteFinalizationRegistry(this.router);
-    }
+    this.maybeConstructWithOptions_(RemoteFinalizationRegistry, 'finalizationRegistry', options, this.router);
+
+    // proxyHandlerFactory creates message passing proxy handlers
+    this.proxyHandlerFactory = options?.proxyHandlerFactory ?? proxyHandlerFactory;
 
     // Heavy lifting for proxy creation and obj-to-proxy
-    if (options?.proxySchema instanceof ProxySchema) {
-      this.proxySchema = options.proxySchema;
-    } else {
-      this.proxySchema = new ProxySchema(this.router, this.promiseStore, this.retainedStore, this.finalizationRegistry);
-    }
+    this.maybeConstructWithOptions_(ProxySchema, 'proxySchema', options, this.router, this.promiseStore, this.retainedStore, this.finalizationRegistry, this.proxyHandlerFactory);
 
     // The model that housed both local and global state
-    if (options?.model instanceof Model) {
-      this.model = options.model;
-    } else {
-      this.model = new Model(this.router, this.proxySchema, options?.model);
-    }
+    this.maybeConstructWithOptions_(Model, 'model', options, this.router, this.proxySchema, options?.model);
 
     // The view of the global state as proxies
-    if (options?.view instanceof View) {
-      this.view = options.view;
-    } else {
-      this.view = new View(this.model, this.proxySchema);
-    }
+    this.maybeConstructWithOptions_(View, 'view', options, this.model, this.proxySchema);
 
     // Completer accepts return messages and "completes" outstanding promises
-    if (options?.completer instanceof Completer) {
-      this.completer = options.completer;
-    } else {
-      this.completer = new Completer(this.router, this.promiseStore, this.proxySchema);
-    }
+    this.maybeConstructWithOptions_(Completer, 'completer', options, this.router, this.promiseStore, this.proxySchema);
 
     // Finalizer takes message signifying that a proxy has been GC'd and removes
     // any references to the proxee locally
-    if (options?.finalizer instanceof Finalizer) {
-      this.finalizer = options.finalizer;
-    } else {
-      this.finalizer = new Finalizer(this.router, this.retainedStore);
-    }
-
+    this.maybeConstructWithOptions_(Finalizer, 'finalizer', options, this.router, this.retainedStore);
 
     // Reflector gets message for local exports (from other nodes) and returns the
     // requested or invokes the function
-    if (options?.reflector instanceof Reflector) {
-      this.reflector = options.reflector;
-    } else {
-      this.reflector = new Reflector(this.router, this.proxySchema, this.retainedStore);
-    }
+    this.maybeConstructWithOptions_(Reflector, 'reflector', options, this.router, this.proxySchema, this.retainedStore);
 
     this.tree = this.view.tree;
     this.view.on('changed', () => this.emit('changed'));
 
     this.importPromises_ = new Map();
+  }
+
+  maybeConstructWithOptions_(Class, property, options, ...args) {
+    const optionBlock = options?.[property];
+
+    if (optionBlock instanceof Class) {
+      this[property] = optionBlock;
+    } else if (args.length) {
+      this[property] = new Class(...args);
+    } else {
+      this[property] = new Class(optionBlock);
+    }
   }
 
   export(...args) {
