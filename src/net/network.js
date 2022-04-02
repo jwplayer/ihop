@@ -13,6 +13,7 @@ class Node {
     this.origin = origin;
     this.window = window;
   }
+
   send(message) {
     if (this.window) {
       this.window.postMessage(message, this.origin);
@@ -24,6 +25,7 @@ class WorkerNode extends Node {
   constructor(id, window, origin) {
     super(id, window, origin);
   }
+
   send(message) {
     if (this.window) {
       this.window.postMessage(message);

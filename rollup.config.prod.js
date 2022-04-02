@@ -10,6 +10,7 @@ export default {
       file: 'dist/ihop.min.js',
       format: 'umd',
       name: 'IHop',
+      sourcemap: true,
       plugins: [
         uglify()
       ],

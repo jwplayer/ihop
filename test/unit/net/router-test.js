@@ -1,8 +1,8 @@
 import sinon from 'sinon';
 import EventEmitter from 'eventemitter3';
 
-import Router from '../../src/net/router.js';
-import globalMock from './mocks/global.js';
+import Router from '../../../src/net/router.js';
+import globalMock from '../mocks/global.js';
 
 const setup = () => {
   const network = new EventEmitter();
