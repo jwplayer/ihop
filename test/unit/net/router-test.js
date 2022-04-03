@@ -2,7 +2,6 @@ import sinon from 'sinon';
 import EventEmitter from 'eventemitter3';
 
 import Router from '../../../src/net/router.js';
-import globalMock from '../mocks/global.js';
 
 const setup = () => {
   const network = new EventEmitter();
@@ -14,9 +13,9 @@ const setup = () => {
 
 QUnit.module('Router');
 
-QUnit.test(`#toParent appends 'from' property to messages`, async (assert) => {
+QUnit.test('#toParent appends \'from\' property to messages', async (assert) => {
   const { router, network } = setup();
-  const fake =  sinon.fake.returns(undefined);
+  const fake = sinon.fake.returns(undefined);
 
   network.toParent = fake;
 
@@ -26,7 +25,7 @@ QUnit.test(`#toParent appends 'from' property to messages`, async (assert) => {
   assert.deepEqual(fake.firstArg, { foo: 'bar', from: 'test' }, 'Added the from property to the message');
 });
 
-QUnit.test(`#toAllChildren appends 'from' property to messages`, async (assert) => {
+QUnit.test('#toAllChildren appends \'from\' property to messages', async (assert) => {
   const { router, network } = setup();
   const fake = sinon.fake.returns(undefined);
 
@@ -38,7 +37,7 @@ QUnit.test(`#toAllChildren appends 'from' property to messages`, async (assert) 
   assert.deepEqual(fake.firstArg, { foo: 'bar', from: 'test' }, 'Added the from property to the message');
 });
 
-QUnit.test(`#onMessage_ called for every event emitted by Network`, async (assert) => {
+QUnit.test('#onMessage_ called for every event emitted by Network', async (assert) => {
   const { router, network } = setup();
   const fake = sinon.replace(router, 'onMessage_', sinon.fake.returns(undefined));
 
@@ -58,7 +57,7 @@ QUnit.test(`#onMessage_ called for every event emitted by Network`, async (asser
   assert.equal(fake.callCount, 3, 'called thrice');
 });
 
-QUnit.test(`#path is updated as messages containing 'path' are recieved`, async (assert) => {
+QUnit.test('#path is updated as messages containing \'path\' are recieved', async (assert) => {
   const { router, network } = setup();
 
   network.emit('message', {
@@ -68,7 +67,7 @@ QUnit.test(`#path is updated as messages containing 'path' are recieved`, async 
   assert.equal(router.path, 'foo.bar.test', 'router.path updated');
 });
 
-QUnit.test(`#nodeMap_ is updated as messages containing 'from' are recieved`, async (assert) => {
+QUnit.test('#nodeMap_ is updated as messages containing \'from\' are recieved', async (assert) => {
   const { router, network } = setup();
 
   network.emit('message', {
@@ -79,8 +78,8 @@ QUnit.test(`#nodeMap_ is updated as messages containing 'from' are recieved`, as
   assert.equal(router.nodeMap_.get('foo'), 'abc123', 'nodeMap_ has new association');
 });
 
-QUnit.test(`#isDestinationChildOrSelf_ correctly detects child and self destinations`, async (assert) => {
-  const { router, network } = setup();
+QUnit.test('#isDestinationChildOrSelf_ correctly detects child and self destinations', async (assert) => {
+  const { router } = setup();
 
   router.path = 'foo.bar';
 
@@ -89,8 +88,8 @@ QUnit.test(`#isDestinationChildOrSelf_ correctly detects child and self destinat
   assert.false(router.isDestinationChildOrSelf_('foo'), 'properly detects parent path');
 });
 
-QUnit.test(`#isDestinationSelf_ correctly detects only self destinations`, async (assert) => {
-  const { router, network } = setup();
+QUnit.test('#isDestinationSelf_ correctly detects only self destinations', async (assert) => {
+  const { router } = setup();
 
   router.path = 'foo.bar';
 
@@ -99,11 +98,11 @@ QUnit.test(`#isDestinationSelf_ correctly detects only self destinations`, async
   assert.false(router.isDestinationSelf_('foo'), 'properly detects parent path');
 });
 
-//ffff
+// ffff
 
-QUnit.test(`#route correctly routes to parent`, async (assert) => {
+QUnit.test('#route correctly routes to parent', async (assert) => {
   const { router, network } = setup();
-  const fake =  sinon.fake.returns(undefined);
+  const fake = sinon.fake.returns(undefined);
 
   network.toParent = fake;
 
@@ -124,9 +123,9 @@ QUnit.test(`#route correctly routes to parent`, async (assert) => {
   }, 'toParent called with correct object');
 });
 
-QUnit.test(`#route correctly routes to children`, async (assert) => {
+QUnit.test('#route correctly routes to children', async (assert) => {
   const { router, network } = setup();
-  const fake =  sinon.fake.returns(undefined);
+  const fake = sinon.fake.returns(undefined);
 
   network.toNode = fake;
 
@@ -149,9 +148,9 @@ QUnit.test(`#route correctly routes to children`, async (assert) => {
   }, 'toNode called with correct object');
 });
 
-QUnit.test(`#route correctly routes to self`, async (assert) => {
+QUnit.test('#route correctly routes to self', async (assert) => {
   const { router, network } = setup();
-  const fake = sinon.replace(router, "emit", sinon.fake.returns(undefined));
+  const fake = sinon.replace(router, 'emit', sinon.fake.returns(undefined));
 
   router.name = 'bar';
   router.path = 'foo.bar';

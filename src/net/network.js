@@ -1,7 +1,6 @@
 import EventEmitter from 'eventemitter3';
 import { nanoid } from 'nanoid';
 
-import SchemaNode from '../proxy/proxy-schema-node.js';
 import sameOrigin from '../util/same.js';
 import { IHOP_VERSION, IHOP_MAJOR_VERSION, IHOP_MINOR_VERSION } from '../util/constants.js';
 
@@ -13,9 +12,9 @@ import WorkerNode from './worker-node.js';
  * Network - security for cross-origin message passing
  */
 export default class Network extends EventEmitter {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super();
-    const networkOptions = Object.assign({}, networkDefaults, options);
+    const networkOptions = { ...networkDefaults, ...options };
 
     this.nodes_ = new Map(/* <uuid, Node> */);
     this.sourceToId_ = new WeakMap(/* <window, uuid> */);
@@ -28,21 +27,22 @@ export default class Network extends EventEmitter {
     this.global.addEventListener('message', (...args) => this.onMessage(...args));
   }
 
-  buildOptions_(options) {
+  buildOptions_ (options) {
     this.global = options.global;
 
     const isWindowRoot = (!this.global || this.global.parent === this.global);
 
     this.codec_ = options.codec;
 
-    this.options = Object.assign({}, {
+    this.options = {
       parentOrigin: '*',
       parentWindow: isWindowRoot ? null : this.global.parent,
       allowedOrigins: [],
-    }, options);
+      ...options
+    };
   }
 
-  setupAllowedOrigins_() {
+  setupAllowedOrigins_ () {
     this.allowedOrigins_ = this.options.allowedOrigins.slice();
 
     if (this.options.parentOrigin !== '*') {
@@ -50,13 +50,13 @@ export default class Network extends EventEmitter {
     }
   }
 
-  setupParentNode_(){
+  setupParentNode_ () {
     if (this.options.parentWindow) {
       this.parentId_ = nanoid();
 
       let parentNode;
 
-      if (this.global['WorkerGlobalScope'] && this.global instanceof this.global['WorkerGlobalScope']) {
+      if (this.global.WorkerGlobalScope && this.global instanceof this.global.WorkerGlobalScope) {
         parentNode = new WorkerNode(this.parentId_, this.options.parentWindow, this.options.parentOrigin);
       } else {
         parentNode = new Node(this.parentId_, this.options.parentWindow, this.options.parentOrigin);
@@ -67,7 +67,7 @@ export default class Network extends EventEmitter {
     }
   }
 
-  ihopMessage_(data) {
+  ihopMessage_ (data) {
     let encodedData = data;
 
     if (this.codec_?.encode && this.codec_?.decode) {
@@ -80,7 +80,7 @@ export default class Network extends EventEmitter {
     };
   }
 
-  registerWorker(worker) {
+  registerWorker (worker) {
     const workerId = nanoid();
     const workerNode = new WorkerNode(workerId, worker, '*');
 
@@ -90,7 +90,7 @@ export default class Network extends EventEmitter {
     worker.addEventListener('message', (...args) => this.onMessage(...args));
   }
 
-  toNodeEncoded_(nodeId, ihopMessage) {
+  toNodeEncoded_ (nodeId, ihopMessage) {
     const node = this.nodes_.get(nodeId);
 
     if (node) {
@@ -99,20 +99,20 @@ export default class Network extends EventEmitter {
     }
   }
 
-  toNode(nodeId, message) {
+  toNode (nodeId, message) {
     const ihopMessage = this.ihopMessage_(message);
 
     this.toNodeEncoded_(nodeId, ihopMessage);
   }
 
-  toParent(message) {
+  toParent (message) {
     this.toNode(this.parentId_, message);
   }
 
-  toAllChildren(message) {
+  toAllChildren (message) {
     const ihopMessage = this.ihopMessage_(message);
 
-    for (let nodeId of this.nodes_.keys()) {
+    for (const nodeId of this.nodes_.keys()) {
       if (nodeId !== this.parentId_) {
         this.toNodeEncoded_(nodeId, ihopMessage);
       }
@@ -123,10 +123,9 @@ export default class Network extends EventEmitter {
     return this.allowedOrigins_.some((allowedOrigin) => sameOrigin(allowedOrigin, origin));
   }
 
-  checkMessage_(message) {
+  checkMessage_ (message) {
     const { origin, srcElement, data } = message;
     let { source } = message;
-    const { allowedOrigins } = this.options_;
 
     if (!source) {
       source = srcElement;
@@ -151,10 +150,20 @@ export default class Network extends EventEmitter {
     const [major, minor] = version.split('.');
 
     if (major !== IHOP_MAJOR_VERSION) {
-      console.error('Received a message from an incompatible IHop version', version, 'expecting', IHOP_VERSION);
+      console.error(
+        'Received a message from an incompatible IHop version',
+        version,
+        'expecting',
+        IHOP_VERSION
+      );
       return false;
-    } else if (minor !== IHOP_MINOR_VERSION) {
-      console.warn('Received a message from a different IHop version', version, 'expecting', IHOP_VERSION);
+    } if (minor !== IHOP_MINOR_VERSION) {
+      console.warn(
+        'Received a message from a different IHop version',
+        version,
+        'expecting',
+        IHOP_VERSION
+      );
     }
 
     return true;
@@ -188,9 +197,7 @@ export default class Network extends EventEmitter {
       decodedData = this.codec_.decode(data.data);
     }
 
-    const newMessage = Object.assign({}, decodedData, {
-      nodeId: sourceId,
-    });
+    const newMessage = { ...decodedData, nodeId: sourceId };
 
     this.emit('message', newMessage);
   }
@@ -200,7 +207,7 @@ export default class Network extends EventEmitter {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  async onMessage(message) {
+  async onMessage (message) {
     const isValid = this.checkMessage_(message);
 
     if (isValid) {

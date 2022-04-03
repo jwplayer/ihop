@@ -5,8 +5,8 @@
  * @returns {String} The origin.
  * @api public
  */
-function origin(url) {
-  if ('string' === typeof url) url = new URL(url);
+function origin (url) {
+  if (typeof url === 'string') url = new URL(url);
 
   //
   // 6.2.  ASCII Serialization of an Origin
@@ -21,7 +21,7 @@ function origin(url) {
   // States that url.scheme, host should be converted to lower case. This also
   // makes it easier to match origins as everything is just lower case.
   //
-  return (url.protocol +'//'+ url.host).toLowerCase();
+  return (`${url.protocol}//${url.host}`).toLowerCase();
 }
 
 /**

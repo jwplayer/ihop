@@ -1,7 +1,7 @@
 import { IHOP_PROXY_TAG } from '../util/constants.js';
 
 export default class Completer {
-  constructor(router, promiseStore, proxySchema) {
+  constructor (router, promiseStore, proxySchema) {
     this.router = router;
     this.promiseStore = promiseStore;
     this.proxySchema = proxySchema;
@@ -9,7 +9,7 @@ export default class Completer {
     this.router.on('return', (...args) => this.completeReturn(...args));
   }
 
-  completeReturn(message) {
+  completeReturn (message) {
     const { source, promiseId, error } = message;
     let { value } = message;
 

@@ -5,12 +5,12 @@ import injectProcessEnv from 'rollup-plugin-inject-process-env';
 
 export default [
   {
-    input: 'src/index.js',
+    input: 'test/unit/index.js',
     output: [
       {
-        file: 'dist/ihop.js',
+        file: 'test/dist/ihop.unit.js',
         format: 'umd',
-        name: 'IHop',
+        name: 'IHopUnit',
         sourcemap: true
       }
     ],

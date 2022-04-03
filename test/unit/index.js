@@ -1,5 +1,6 @@
 import * as Router from './net/router-test.js';
 import * as View from './state/view-test.js';
+
 /*
 import * as Network from './net/network-test.js';
 import * as Model from './state/model-test.js';
@@ -21,3 +22,9 @@ import * as getAllProperties from './util/get-all-properties-test.js';
 import * as isStructuredClonable from './util/is-structured-clonable.js';
 import * as same from './util/same-test.js';
 */
+
+// This is to eliminate "unused" linting errors
+export default {
+  Router,
+  View
+};

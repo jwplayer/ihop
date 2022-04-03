@@ -20,16 +20,27 @@ import proxyHandlerFactory from './sources/proxy-handler-factory.js';
 
 class IHopExport extends IHop {
   static Network = Network;
+
   static PromiseStore = PromiseStore;
+
   static RetainedStore = RetainedStore;
+
   static Router = Router;
+
   static RemoteFinalizationRegistry = RemoteFinalizationRegistry;
+
   static ProxySchema = ProxySchema;
+
   static Model = Model;
+
   static View = View;
+
   static Completer = Completer;
+
   static Finalizer = Finalizer;
+
   static Reflector = Reflector;
+
   static proxyHandlerFactory = proxyHandlerFactory;
 }
 

@@ -4,18 +4,16 @@ import { IHOP_PROXY_TAG } from '../util/constants.js';
 const proxyHandlerFactory = (router, promiseStore, proxySchema, destination, targetName) => {
   const { name: from, path: source } = router;
 
-  const sanitizeArgs = (args) => {
+  const sanitizeArgs = (args) =>
     // if one of the arguments is a function - ie. a callback:
     // 1) store function locally in a store and get a uuid
     // 2) replace argument with uuid
-    return args.map((arg) => {
+    args.map((arg) => {
       if (isStructuredCloneable(arg)) {
         return arg;
       }
       return proxySchema.toSchema(arg);
     });
-  };
-
   const doApplyOrConstruct = (type, unsafeArgs = []) => {
     const [promiseId, promise] = promiseStore.makePromise();
     // Arguments might need to be handled specially
@@ -28,36 +26,36 @@ const proxyHandlerFactory = (router, promiseStore, proxySchema, destination, tar
       destination,
       from,
       source,
-      promiseId,
+      promiseId
     });
 
     return promise;
   };
 
   return {
-    apply(targetFn, thisArgs, args, receiver) {
+    apply (targetFn, thisArgs, args, receiver) {
       // A trap for a function call
       return doApplyOrConstruct('call', args);
     },
 
-    construct(targetObj, args, newTarget) {
+    construct (targetObj, args, newTarget) {
       // A trap for the new operator
       return doApplyOrConstruct('new', args);
     },
 
-    defineProperty() {
+    defineProperty () {
       // Throw?
       return false;
     },
 
-    deleteProperty() {
+    deleteProperty () {
       // TODO:
       // We can't actually return a promise from this only boolean :(
       // So we pretend the delete always succeeds
       return true;
     },
 
-    get(targetObj, property, receiver) {
+    get (targetObj, property, receiver) {
       const propType = typeof targetObj[property];
 
       if (property === IHOP_PROXY_TAG || (propType === 'object' && !targetObj[property][IHOP_PROXY_TAG]) || propType === 'function') {
@@ -80,17 +78,17 @@ const proxyHandlerFactory = (router, promiseStore, proxySchema, destination, tar
         destination,
         from,
         source,
-        promiseId,
+        promiseId
       });
 
       return promise;
     },
 
-    getOwnPropertyDescriptor() {
+    getOwnPropertyDescriptor () {
       // This is possible
     },
 
-    getPrototypeOf() {
+    getPrototypeOf () {
       // TODO:
       // This is possible with two caveats:
       //   1. `instanceof` will not work
@@ -112,19 +110,19 @@ const proxyHandlerFactory = (router, promiseStore, proxySchema, destination, tar
       //   );
     },
 
-    has() {
+    has () {
       // Throw?
       // I don't think you can return anything other than boolean
       throw new SyntaxError('You can not use `in` operator with remote proxies.');
     },
 
-    isExtensible() {
+    isExtensible () {
       // Throw?
       // I don't think you can return anything other than boolean
       return true;
     },
 
-    ownKeys() {
+    ownKeys () {
       // Throw?
       // I don't think you can return anything other than array of strings
 
@@ -132,13 +130,13 @@ const proxyHandlerFactory = (router, promiseStore, proxySchema, destination, tar
       // the promise into an empty array.
     },
 
-    preventExtensions() {
+    preventExtensions () {
       // Throw?
       // I don't think you can return anything other than boolean
       return false;
     },
 
-    set(targetObj, property, value) {
+    set (targetObj, property, value) {
       // We can't actually return a promise from this only boolean :(
       // So we pretend the set always works
 
@@ -149,16 +147,16 @@ const proxyHandlerFactory = (router, promiseStore, proxySchema, destination, tar
         destination,
         value,
         from,
-        source,
+        source
       });
 
       return true;
     },
 
-    setPrototypeOf() {
+    setPrototypeOf () {
       // Throw?
       return false;
-    },
+    }
   };
 };
 

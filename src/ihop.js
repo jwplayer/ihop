@@ -1,4 +1,3 @@
-import global from 'global';
 import EventEmitter from 'eventemitter3';
 
 import Network from './net/network.js';
@@ -20,7 +19,7 @@ import RemoteFinalizationRegistry from './sources/remote-finalization-registry.j
 import proxyHandlerFactory from './sources/proxy-handler-factory.js';
 
 export default class IHop extends EventEmitter {
-  constructor(name, options) {
+  constructor (name, options) {
     super();
     this.name = name;
 
@@ -69,7 +68,7 @@ export default class IHop extends EventEmitter {
     this.importPromises_ = new Map();
   }
 
-  maybeConstructWithOptions_(Class, property, options, ...args) {
+  maybeConstructWithOptions_ (Class, property, options, ...args) {
     const optionBlock = options?.[property];
 
     if (optionBlock instanceof Class) {
@@ -81,21 +80,21 @@ export default class IHop extends EventEmitter {
     }
   }
 
-  export(...args) {
+  export (...args) {
     return this.model.export(...args);
   }
 
-  registerWorker(worker) {
+  registerWorker (worker) {
     return this.network.registerWorker(worker);
   }
 
-  getPath_(path) {
+  getPath_ (path) {
     const pathParts = path.split('.');
 
     return pathParts.reduce((obj, pathPart) => (obj && obj[pathPart]), this.view.tree);
   }
 
-  import(path) {
+  import (path) {
     // Does a tracking promise already exist?
     if (this.importPromises_.has(path)) {
       return this.importPromises_.get(path);
@@ -104,23 +103,22 @@ export default class IHop extends EventEmitter {
     // Does property already exist?
     const obj = this.getPath_(path);
 
-    if (!!obj) {
+    if (obj) {
       const promise = Promise.resolve(obj);
       this.importPromises_.set(path, promise);
       return promise;
-    } else {
-      const promise = new Promise((accept, reject) => {
-        const looker = () => {
-          const obj = this.getPath_(path);
-          if (!!obj) {
-            this.view.off('changed', looker);
-            return accept(obj);
-          }
-        };
-        this.view.on('changed', looker);
-      });
-      this.importPromises_.set(path, promise);
-      return promise;
     }
+    const promise = new Promise((resolve) => {
+      const looker = () => {
+        const found = this.getPath_(path);
+        if (found) {
+          this.view.off('changed', looker);
+          resolve(found);
+        }
+      };
+      this.view.on('changed', looker);
+    });
+    this.importPromises_.set(path, promise);
+    return promise;
   }
 }

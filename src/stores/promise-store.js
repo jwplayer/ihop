@@ -1,31 +1,21 @@
 import { nanoid } from 'nanoid';
-
-// Backwards promise - resolvable from outside
-const Esimorp = () => {
-  let resolve, reject;
-  const promise = new Promise((...args) => {
-    [resolve, reject] = args;
-  });
-  promise.resolve = resolve;
-  promise.reject = reject;
-  return promise;
-};
+import esimorp from '../util/esimorp.js';
 
 export default class PromiseStore {
-  constructor() {
-    this.store = new Map(/*<uuid, promise>*/);
+  constructor () {
+    this.store = new Map(/* <uuid, promise> */);
   }
 
-  makePromise() {
+  makePromise () {
     const promiseId = nanoid();
-    const promise = Esimorp();
+    const promise = esimorp();
 
     this.store.set(promiseId, promise);
 
     return [promiseId, promise];
   }
 
-  getAndDeletePromise(promiseId) {
+  getAndDeletePromise (promiseId) {
     const promise = this.store.get(promiseId);
 
     if (!promise) {
@@ -36,7 +26,7 @@ export default class PromiseStore {
     return promise;
   }
 
-  resolvePromise(promiseId, value) {
+  resolvePromise (promiseId, value) {
     const promise = this.getAndDeletePromise(promiseId);
 
     if (promise) {
@@ -44,7 +34,7 @@ export default class PromiseStore {
     }
   }
 
-  rejectPromise(promiseId, value) {
+  rejectPromise (promiseId, value) {
     const promise = this.getAndDeletePromise(promiseId);
 
     if (promise) {

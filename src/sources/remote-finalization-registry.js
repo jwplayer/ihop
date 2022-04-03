@@ -3,7 +3,7 @@ const MAX_CACHE_TIME = 5000; // 5 seconds
 const MAX_CACHE_SIZE = 1000;
 
 export default class RemoteFinalizationRegistry {
-  constructor(router) {
+  constructor (router) {
     this.router = router;
 
     this.registry_ = new FinalizationRegistry((heldValue) => this.onFinalization_(heldValue));
@@ -19,7 +19,7 @@ export default class RemoteFinalizationRegistry {
     this.debounceTimer_ = {};
   }
 
-  onFinalization_(heldValue) {
+  onFinalization_ (heldValue) {
     const { destination, retainedId } = heldValue;
 
     // Each destination node gets its own cache and timer
@@ -32,7 +32,7 @@ export default class RemoteFinalizationRegistry {
 
     const sinceLastSent = Date.now() - this.lastSent_[destination];
 
-    if (sinceLastSent > MAX_CACHE_TIME || this.cache_[destination]. length > MAX_CACHE_SIZE) {
+    if (sinceLastSent > MAX_CACHE_TIME || this.cache_[destination].length > MAX_CACHE_SIZE) {
       return this.flushCache_(destination);
     }
 
@@ -40,12 +40,12 @@ export default class RemoteFinalizationRegistry {
     this.debounceTimer_[destination] = setTimeout(() => this.flushCache_(destination), DEBOUNCE_TIME);
   }
 
-  flushAllCaches_() {
+  flushAllCaches_ () {
     const destinations = Object.keys(this.cache_);
     destinations.forEach((destination) => this.flushCache_(destination));
   }
 
-  flushCache_(destination) {
+  flushCache_ (destination) {
     if (!this.cache_[destination].length) {
       return;
     }
@@ -64,7 +64,7 @@ export default class RemoteFinalizationRegistry {
     this.debounceTimer_[destination] = null;
   }
 
-  register(obj, heldValue) {
+  register (obj, heldValue) {
     return this.registry_.register(obj, heldValue);
   }
 }

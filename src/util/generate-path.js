@@ -1,5 +1,3 @@
-const generatePath = (base, part) => {
-  return base.length ? `${base}.${part}` : part;
-};
+const generatePath = (base, part) => (base.length ? `${base}.${part}` : part);
 
 export default generatePath;

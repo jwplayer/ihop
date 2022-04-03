@@ -3,7 +3,7 @@ import EventEmitter from 'eventemitter3';
 import generatePath from '../util/generate-path.js';
 
 export default class View extends EventEmitter {
-  constructor(model, proxySchema) {
+  constructor (model, proxySchema) {
     super();
     this.model = model;
     this.proxySchema = proxySchema;
@@ -12,12 +12,12 @@ export default class View extends EventEmitter {
     this.model.on('changed', (model) => this.reifyModel_(model));
   }
 
-  reifyModel_(globalState) {
+  reifyModel_ (globalState) {
     this.levelToView_(globalState, this.tree, '');
     this.emit('changed');
   }
 
-  levelToView_(srcNode, dstNode, path) {
+  levelToView_ (srcNode, dstNode, path) {
     const srcKeys = Object.keys(srcNode);
 
     srcKeys.forEach((key) => {

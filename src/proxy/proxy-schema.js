@@ -1,13 +1,12 @@
 import { nanoid } from 'nanoid';
 
 import isStructuredCloneable from '../util/is-structured-cloneable.js';
-import generatePath from '../util/generate-path.js';
 import { IHOP_PROXY_TAG } from '../util/constants.js';
 import getAllProperties from '../util/get-all-properties.js';
 
 import SchemaNode from './proxy-schema-node.js';
 
-// List of properties that we do not create deep-proxies for
+// List of properties that we DO NOT create deep-proxies for
 const doNotDescend = [
   // From Events
   'currentTarget',
@@ -30,11 +29,11 @@ const doNotDescend = [
   'parentNode',
   'previousElementSibling',
   'previousSibling',
-  'ownerDocument',
+  'ownerDocument'
 ];
 
 export default class ProxySchema {
-  constructor(router, promiseStore, retainedStore, finalizationRegistry, proxyHandlerFactory) {
+  constructor (router, promiseStore, retainedStore, finalizationRegistry, proxyHandlerFactory) {
     this.router = router;
     this.promiseStore = promiseStore;
     this.retainedStore = retainedStore;
@@ -43,7 +42,7 @@ export default class ProxySchema {
     this.finalizationRegistry = finalizationRegistry;
   }
 
-  retain_(obj) {
+  retain_ (obj) {
     let retainedId;
 
     if (!retainedId) {
@@ -54,7 +53,7 @@ export default class ProxySchema {
     return retainedId;
   }
 
-  toSchema(obj, parent = null, cycleTracker = [], doNotDescend = false) {
+  toSchema (obj, parent = null, cycleTracker = [], doNotDescend = false) {
     let schema;
 
     if (typeof obj === 'object') {
@@ -91,10 +90,10 @@ export default class ProxySchema {
     return schema;
   }
 
-  deepToSchema_(srcNode, dstNode, parent = null, cycleTracker) {
+  deepToSchema_ (srcNode, dstNode, parent = null, cycleTracker) {
     const srcKeys = getAllProperties(srcNode);
 
-    srcKeys.forEach(key => {
+    srcKeys.forEach((key) => {
       const src = srcNode[key];
 
       if (cycleTracker.includes(src)) {
@@ -110,17 +109,17 @@ export default class ProxySchema {
     });
   }
 
-  fromSchema(schema, path, needsFinalization = false) {
+  fromSchema (schema, path, needsFinalization = false) {
     let obj;
 
-    if(typeof schema === 'object') {
+    if (typeof schema === 'object') {
       if (this.isSchema(schema)) {
-        const type = schema.type;
+        const { type } = schema;
 
         if (type === 'function') {
           // This can not be an arrow function because we use it
           // for constructor proxies
-          obj = function() {};
+          obj = function () {};
         } else if (type === 'object') {
           obj = {};
         } else if (type === 'value') {
@@ -143,16 +142,16 @@ export default class ProxySchema {
         }
       } else {
         obj = {};
-        this.deepFromSchema_(schema, obj, generatePath(path, key), needsFinalization);
+        this.deepFromSchema_(schema, obj, path, needsFinalization);
       }
     } else {
-      obj = src;
+      obj = schema;
     }
 
     return obj;
   }
 
-  deepFromSchema_(srcNode, dstNode = {}, path, needsFinalization) {
+  deepFromSchema_ (srcNode, dstNode = {}, path, needsFinalization) {
     const srcKeys = Object.keys(srcNode);
 
     srcKeys.forEach((key) => {
@@ -160,7 +159,7 @@ export default class ProxySchema {
     });
   }
 
-  isSchema(obj) {
+  isSchema (obj) {
     return (obj instanceof SchemaNode);
   }
 }

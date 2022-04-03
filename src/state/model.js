@@ -1,11 +1,8 @@
-import { nanoid } from 'nanoid';
 import EventEmitter from 'eventemitter3';
 import global from 'global';
 
-import isStructuredCloneable from '../util/is-structured-cloneable.js';
-
 const defaultOptions = {
-  forceRoot: false,
+  forceRoot: false
 };
 
 /**
@@ -13,10 +10,10 @@ const defaultOptions = {
  * globally consistent state between iframes.
  */
 export default class Model extends EventEmitter {
-  constructor(router, proxySchema, options = {}) {
+  constructor (router, proxySchema, options = {}) {
     super();
 
-    const finalOptions = Object.assign({}, defaultOptions, options);
+    const finalOptions = { ...defaultOptions, ...options };
 
     this.childTreeVersions_ = new Map();
     this.localTreeVersion_ = 1;
@@ -41,7 +38,7 @@ export default class Model extends EventEmitter {
     this.router.on('poke', (...args) => this.onPoke(...args));
   }
 
-  export(name, value) {
+  export (name, value) {
     // TODO: Protect against collisions
     if ((typeof value === 'object' && value !== null) || typeof value === 'function') {
       this.localTree_[name] = this.proxySchema.toSchema(value);
@@ -53,19 +50,19 @@ export default class Model extends EventEmitter {
     this.peekState_();
   }
 
-  registerWithParent_() {
+  registerWithParent_ () {
     // Periodically, peek parent until we get a poke back then stop
-    this.parentPing_ = setInterval(()=> this.peekState_(), 1000);
+    this.parentPing_ = setInterval(() => this.peekState_(), 1000);
 
     this.peekState_();
   }
 
-  notRootAnymore_() {
+  notRootAnymore_ () {
     this.isRoot = false;
     clearInterval(this.parentPing_);
   }
 
-  peekState_() {
+  peekState_ () {
     this.router.toParent({
       type: 'peek',
       version: this.localTreeVersion_,
@@ -73,7 +70,7 @@ export default class Model extends EventEmitter {
     });
   }
 
-  pokeState_() {
+  pokeState_ () {
     this.emit('changed', this.globalTree_);
 
     this.router.toAllChildren({
@@ -89,8 +86,10 @@ export default class Model extends EventEmitter {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onPeek(data) {
-    const {port, from, state, version} = data;
+  onPeek (data) {
+    const {
+      from, state, version
+    } = data;
 
     // If we didn't know this child exists...
     if (!this.childTreeVersions_.has(from)) {
@@ -124,8 +123,8 @@ export default class Model extends EventEmitter {
    * @param  {object} data - The event payload
    * @param  {window} eventSource - The source window the event originated from
    */
-  onPoke(data) {
-    const {state, version, path} = data;
+  onPoke (data) {
+    const { state, version } = data;
 
     // If we get a poke from our parent, we know we are no longer a root node
     if (this.isRoot) {

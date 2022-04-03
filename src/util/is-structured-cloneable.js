@@ -1,10 +1,11 @@
 import getAllProperties from './get-all-properties.js';
 
+/*
 const primitiveTypes = ['string', 'number', 'boolean', 'bigint', 'undefined'];
 const objectTypes = [
   '[object String]',
   '[object Number]',
-  '[object Boolean]',
+  '[object Boolean]'
   // '[object Date]',
   // '[object RegExp]',
   // '[object Blob]',
@@ -28,9 +29,9 @@ const isStructuredCloneable = (o) => {
   }
   return false;
 };
+*/
 
 const isStructuredCloneable2 = (o) => {
-  let k;
   try {
     if (structuredClone(o)) {
       return true;
@@ -38,16 +39,15 @@ const isStructuredCloneable2 = (o) => {
 
     if (typeof o === 'object') {
       const keys = getAllProperties(o);
-      keys.forEach(key => {
+      keys.forEach((key) => {
         structuredClone(o[key]);
       });
     }
 
     return true;
-  } catch(error) {
+  } catch (error) {
     return false;
   }
 };
 
 export default isStructuredCloneable2;
-

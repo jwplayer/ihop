@@ -25,8 +25,8 @@
     ihop.import('main.A.video'),
     ihop.import('main.A.B.buyNow'),
     ihop.import('main.A.B.buyNowContainer')
-  ]).then(([videoEl, buyNowEl, buyNowContEl])=> {;
-    const currTimeProg = document.querySelector('#progress')
+  ]).then(([videoEl, buyNowEl, buyNowContEl])=> {
+    const currTimeProg = document.querySelector('#progress');
 
     // !! Modify properties on the video element just like it was local to the page !!
     videoEl.volume = 0;

@@ -1,12 +1,12 @@
 export default class Finalizer {
-  constructor(router, retainedStore) {
+  constructor (router, retainedStore) {
     this.router = router;
     this.retainedStore = retainedStore;
 
     this.router.on('final', (...args) => this.finalization(...args));
   }
 
-  finalization(message) {
+  finalization (message) {
     const { retainedIds } = message;
     const originalSize = this.retainedStore.keyToObj.size;
     retainedIds.forEach((retainedId) => {

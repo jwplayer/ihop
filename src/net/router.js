@@ -3,7 +3,7 @@ import EventEmitter from 'eventemitter3';
 import generatePath from '../util/generate-path.js';
 
 export default class Router extends EventEmitter {
-  constructor(name, network) {
+  constructor (name, network) {
     super();
     this.name = name;
     this.path = name;
@@ -14,15 +14,15 @@ export default class Router extends EventEmitter {
     this.network.on('message', (...args) => this.onMessage_(...args));
   }
 
-  isDestinationChildOrSelf_(dest) {
+  isDestinationChildOrSelf_ (dest) {
     return dest.indexOf(this.path) === 0;
   }
 
-  isDestinationSelf_(dest) {
+  isDestinationSelf_ (dest) {
     return dest === this.path;
   }
 
-  getChildDestination_(destination) {
+  getChildDestination_ (destination) {
     const pathLen = this.path.length;
     const subPath = destination.slice(pathLen + 1);
 
@@ -35,13 +35,13 @@ export default class Router extends EventEmitter {
     this.network.toParent(message);
   }
 
-  toAllChildren(message) {
+  toAllChildren (message) {
     Object.assign(message, { from: this.name });
 
     this.network.toAllChildren(message);
   }
 
-  route(message) {
+  route (message) {
     const { destination, type } = message;
 
     /* c8 ignore next 3 */
@@ -69,7 +69,9 @@ export default class Router extends EventEmitter {
 
   /* c8 ignore start */
   logMessage_ (message) {
-    const { destination, source, type, from } = message;
+    const {
+      destination, source, type, from
+    } = message;
     const at = this.name;
 
     if (at !== from) {
@@ -83,7 +85,7 @@ export default class Router extends EventEmitter {
   }
   /* c8 ignore stop */
 
-  onMessage_(message) {
+  onMessage_ (message) {
     // Listen for events that let us know topography
     // chiefly peek and poke
     const { from, path, nodeId } = message;

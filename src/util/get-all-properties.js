@@ -1,15 +1,15 @@
 const exclude = [
   '__proto__',
   'prototype',
-  'constructor',
+  'constructor'
 ];
 
 const getAllProperties = (obj) => {
-  let res = [];
+  const res = [];
   let node = obj;
 
   while (node && node.constructor !== Object) {
-    for(const key of Object.getOwnPropertyNames(node)){
+    for (const key of Object.getOwnPropertyNames(node)) {
       if (exclude.includes(key)) {
         continue;
       }

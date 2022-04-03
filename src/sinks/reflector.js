@@ -3,7 +3,7 @@ import isStructuredCloneable from '../util/is-structured-cloneable.js';
 const noop = () => {};
 
 export default class Reflector {
-  constructor(router, proxySchema, retainedStore) {
+  constructor (router, proxySchema, retainedStore) {
     this.router = router;
     this.proxySchema = proxySchema;
     this.retainedStore = retainedStore;
@@ -14,10 +14,10 @@ export default class Reflector {
     this.router.on('new', (message) => this.onNew(message));
   }
 
-  makeArgs_(args, source) {
+  makeArgs_ (args, source) {
     // Arguments can be either a value or a ProxySchema
     return args.map((arg) => {
-      if (!this.proxySchema.isSchema(arg)){
+      if (!this.proxySchema.isSchema(arg)) {
         return arg;
       }
 
@@ -28,10 +28,10 @@ export default class Reflector {
 
       return proxy;
     });
-  };
+  }
 
   doReturn (message, value, error, forceProxy = false) {
-    const { source, promiseId} = message;
+    const { source, promiseId } = message;
 
     if (forceProxy || !isStructuredCloneable(value)) {
       value = this.proxySchema.toSchema(value);
@@ -44,15 +44,15 @@ export default class Reflector {
       error,
       from: this.router.name,
       source: this.router.path,
-      promiseId,
+      promiseId
     });
   }
 
-  async onGet(message) {
-    const {targetName, property } = message;
+  async onGet (message) {
+    const { targetName, property } = message;
 
     try {
-      //const propertyPath = property.split('.');
+      // const propertyPath = property.split('.');
       const target = this.retainedStore.get(targetName);
 
       if (!target) {
@@ -67,8 +67,8 @@ export default class Reflector {
     }
   }
 
-  async onCall(message) {
-    const {targetName, args, source } = message;
+  async onCall (message) {
+    const { targetName, args, source } = message;
     const newArgs = this.makeArgs_(args, source);
 
     try {
@@ -91,8 +91,8 @@ export default class Reflector {
     }
   }
 
-  async onNew(message) {
-    const {targetName, args, source } = message;
+  async onNew (message) {
+    const { targetName, args, source } = message;
     const newArgs = this.makeArgs_(args, source);
 
     try {
@@ -115,13 +115,15 @@ export default class Reflector {
     }
   }
 
-  async onSet(message) {
-    const {targetName, property, value } = message;
+  async onSet (message) {
+    const { targetName, property, value } = message;
 
     try {
       const target = this.retainedStore.get(targetName);
 
       Reflect.set(target, property, value);
-    } catch (error) {}
+    } catch (error) {
+      noop(error);
+    }
   }
 }
